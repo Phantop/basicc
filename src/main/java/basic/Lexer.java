@@ -1,32 +1,23 @@
 package basic;
 import java.lang.Character;
-import java.util.*;
+import java.util.LinkedList;
+import java.lang.Exception;
+import java.io.IOException;
 import basic.Token.TokenType;
 
 public class Lexer {
-    private LinkedList<Token> tokens;
     private CodeHandler reader;
     private int line;
     private int pos;
 
-    public Lexer(String filename) {
-        this.tokens = new LinkedList<Token>();
+    public Lexer(String filename) throws IOException {
         this.reader = new CodeHandler(filename);
-        this.line = 0;
+        this.line = 1;
         this.pos = 0;
     }
 
-    public LinkedList<Token> lex() {
-        // Potential strategy, assume type is number unless non-digits or multiple '.' found if can't use regex
-        // Potential between-token regex: "^( |\t|\r)*"
-        // Potential token regex: "^[^ \t\r\n]*"
-        // Word sanitizer: "^[a-z][a-z0-9]*[$%]?"
-        // Number sanitizer: "^[0-9]*\.?[0-9]*"
-        // Clarifying question: verify that carriage return gets removed
-        // Clarifying question: behavior at end of word (space/tab/newline required? handling of %/$)
-        // Clarifying answer: carriage return just entirely act like it isn't there (leave pos alone)
-        // Clarifying answer: $/% means multiple words regardless of spacing
-        // Clarifying answer: multiples .s in number mean new number at the second
+    public LinkedList<Token> lex() throws Exception {
+        var tokens = new LinkedList<Token>();
         while (!reader.isDone()) {
             char next = reader.getChar();
             switch(next) {
@@ -35,27 +26,27 @@ public class Lexer {
                     pos++;
                 case '\r': // Doesn't increment pos like the other two
                     continue;
-                case '\n': // Newline handling
+                case '\n': // Newline handling, lex is per line according to rubric
                     tokens.add(new Token(TokenType.ENDOFLINE, line, pos));
                     line++;
                     pos = 0;
-                    continue;
+                    return tokens;
             }
 
             // these two don't swallow or move pos just to make programming
             // process number and word a tiny bit simpler
-            if (Character.isDigit(next))
+            if (Character.isDigit(next) || next == '.')
                 tokens.add(processNumber(next, pos++));
             else if (Character.isAlphabetic(next))
                 tokens.add(processWord(next, pos++));
             else {
                 System.err.format("Invalid character %c at %d:%d", next, line, pos);
-                System.exit(1);
+                throw new Exception();
             }
 
 
         }
-        return this.tokens;
+        return tokens;
     }
 
     private Token processWord(char next, int ipos) {

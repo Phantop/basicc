@@ -1,47 +1,45 @@
 package basic;
 
-import org.junit.BeforeClass;
+import org.junit.Assert;
 import org.junit.Test;
-import static org.junit.Assert.*;
+import java.io.IOException;
 
-import java.util.Iterator;
+public class LexerTest{
 
-public class LexerTest {
+    private static Lexer l = null;
 
-    private static Graph<String, String> g = null;
-    private static String[] s = null;
-    private static final int NUM_NODES_TO_TEST = 2;
+    @Test
+    public void testOpen() throws IOException {
+        l = new Lexer("example.txt");
+    }
 
-    @BeforeClass
-    public static void setupForTests() throws Exception {
-        s = new String[NUM_NODES_TO_TEST];
-        for (int i=0; i<NUM_NODES_TO_TEST; i++) {
-            s[i] = String.valueOf(1-i);
+    @Test(expected = IOException.class)
+    public void testOpenFail() throws IOException {
+        l = new Lexer("invalid.txt");
+    }
+
+    @Test
+    public void testNiceList() throws Exception {
+        testOpen();
+        String expectedList =
+            "WORD(an) WORD(empty_line$) WORD(is) WORD(belw) ENDOFLINE\n" +
+            "ENDOFLINE\n" +
+            "NUMBER(5) WORD(hello) ENDOFLINE\n" +
+            "NUMBER(5.23) NUMBER(8.52) NUMBER(.3) ENDOFLINE\n" +
+            "NUMBER(8) NUMBER(4) NUMBER(9999) ENDOFLINE\n" +
+            "NUMBER(7) NUMBER(4) NUMBER(3) NUMBER(1) ENDOFLINE\n" +
+            "NUMBER(2) WORD(number) NUMBER(3) ENDOFLINE\n";
+        String outputList = new String();
+        for (var tokens = l.lex(); tokens.size() != 0; tokens = l.lex()) {
+            for (Token t: tokens)
+                outputList = outputList + t;
         }
+        Assert.assertEquals(expectedList, outputList);
     }
 
-    @Test
-    public void testAddNode() {
-        g = new Graph<String, String>();
-        for (String i : s) g.addNode(i);
-        Iterator<String> iter = g.listNodes();
-        assertEquals("0", iter.next());
-        assertEquals("1", iter.next());
-    }
-
-    @Test
-    public void testAddEdge() {
-        testAddNode();
-        g.addEdge("0", "1", "a");
-        g.addEdge("0", "1", "b");
-        g.addEdge("1", "0", "b");
-        g.addEdge("1", "0", "a");
-        for (String i : s) g.addNode(i); //make sure trying to readd doesn't destroy edges
-        Iterator<String> iter = g.listChildren("0");
-        assertEquals("1(a)", iter.next());
-        assertEquals("1(b)", iter.next());
-        iter = g.listChildren("1");
-        assertEquals("0(a)", iter.next());
-        assertEquals("0(b)", iter.next());
+    @Test(expected = Exception.class)
+    public void testNaughtyNum() throws Exception {
+        l = new Lexer("badexample.txt");
+        l.lex();
     }
 }

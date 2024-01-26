@@ -8,12 +8,13 @@ public class CodeHandler {
     private String content;
     private int index;
 
-    public CodeHandler(String filename) {
+    public CodeHandler(String filename) throws IOException {
         Path fileLoc = Paths.get(filename);
         try {
             content = new String(Files.readAllBytes(fileLoc));
         } catch (IOException x) {
             System.err.format("IOException: %s%n", x);
+            throw x;
         }
         index = 0;
     }

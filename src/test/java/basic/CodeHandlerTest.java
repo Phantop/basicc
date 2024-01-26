@@ -1,47 +1,46 @@
 package basic;
 
-import org.junit.BeforeClass;
+import org.junit.Assert;
 import org.junit.Test;
-import static org.junit.Assert.*;
+import java.io.IOException;
 
-import java.util.Iterator;
+public class CodeHandlerTest{
 
-public class LexerTest {
+    private static CodeHandler c = null;
 
-    private static Graph<String, String> g = null;
-    private static String[] s = null;
-    private static final int NUM_NODES_TO_TEST = 2;
+    @Test
+    public void testOpen() throws IOException {
+        c = new CodeHandler("example.txt");
+    }
 
-    @BeforeClass
-    public static void setupForTests() throws Exception {
-        s = new String[NUM_NODES_TO_TEST];
-        for (int i=0; i<NUM_NODES_TO_TEST; i++) {
-            s[i] = String.valueOf(1-i);
+    @Test(expected = IOException.class)
+    public void testOpenFail() throws IOException {
+        c = new CodeHandler("invalid.txt");
+    }
+
+    @Test
+    public void testReads() throws IOException {
+        testOpen();
+        Assert.assertEquals('a', c.peek(0));
+        Assert.assertEquals(' ', c.peek(2));
+        Assert.assertEquals('a', c.getChar());
+        Assert.assertEquals('n', c.getChar());
+        Assert.assertEquals(' ', c.getChar());
+        Assert.assertEquals("empty", c.peekString(5));
+        while (c.getChar() != '1');
+        Assert.assertEquals("\n2 number 3\n", c.remainder());
+    }
+
+    @Test
+    public void testEats() throws IOException {
+        testOpen();
+        c.swallow();
+        Assert.assertEquals('n', c.peek(0));
+        int i = 0;
+        while (!c.isDone()) {
+            c.swallow();
+            i++;
         }
-    }
-
-    @Test
-    public void testAddNode() {
-        g = new Graph<String, String>();
-        for (String i : s) g.addNode(i);
-        Iterator<String> iter = g.listNodes();
-        assertEquals("0", iter.next());
-        assertEquals("1", iter.next());
-    }
-
-    @Test
-    public void testAddEdge() {
-        testAddNode();
-        g.addEdge("0", "1", "a");
-        g.addEdge("0", "1", "b");
-        g.addEdge("1", "0", "b");
-        g.addEdge("1", "0", "a");
-        for (String i : s) g.addNode(i); //make sure trying to readd doesn't destroy edges
-        Iterator<String> iter = g.listChildren("0");
-        assertEquals("1(a)", iter.next());
-        assertEquals("1(b)", iter.next());
-        iter = g.listChildren("1");
-        assertEquals("0(a)", iter.next());
-        assertEquals("0(b)", iter.next());
+        Assert.assertEquals(74, i);
     }
 }
