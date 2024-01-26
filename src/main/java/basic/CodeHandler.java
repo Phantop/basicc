@@ -1,11 +1,12 @@
-package hw1;
+package basic;
 import java.io.IOException;
-import java.nio.file.*;
-import java.util.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class CodeHandler {
-    String content;
-    int index;
+    private String content;
+    private int index;
 
     public CodeHandler(String filename) {
         Path fileLoc = Paths.get(filename);

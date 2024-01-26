@@ -1,13 +1,12 @@
-package hw1;
-import java.util.*;
+package basic;
 
 public class Token {
-    enum TokenType { WORD, NUMBER, ENDOFLINE };
+enum TokenType { WORD, NUMBER, ENDOFLINE };
 
-    TokenType type;
-    String value;
-    int line;
-    int pos;
+    private TokenType type;
+    private String value;
+    private int line;
+    private int pos;
 
     public Token(TokenType type, int line, int pos) {
         this(type, line, pos, null);

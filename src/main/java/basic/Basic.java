@@ -1,4 +1,4 @@
-package hw1;
+package basic;
 import java.util.*;
 
 public class Basic {
