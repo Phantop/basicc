@@ -24,37 +24,44 @@ public class Lexer {
         // Number sanitizer: "^[0-9]*\.?[0-9]*"
         // Clarifying question: verify that carriage return gets removed
         // Clarifying question: behavior at end of word (space/tab/newline required? handling of %/$)
+        // Clarifying answer: carriage return just entirely act like it isn't there (leave pos alone)
+        // Clarifying answer: $/% means multiple words regardless of spacing
+        // Clarifying answer: multiples .s in number mean new number at the second
         while (!reader.isDone()) {
-            var next = reader.getChar();
+            char next = reader.getChar();
             switch(next) {
                 case ' ': // Space/tab consumption
                 case '\t':
-                case '\r': // Acts as a space because we are "between" tokens
-                    reader.swallow();
                     pos++;
+                case '\r': // Doesn't increment pos like the other two
                     continue;
                 case '\n': // Newline handling
-                    reader.swallow();
                     tokens.add(new Token(TokenType.ENDOFLINE, line, pos));
                     line++;
                     pos = 0;
                     continue;
             }
 
-            if (Character.isAlphabetic(next))
-                tokens.add(processWord(next));
-            else if (Character.isDigit(next))
-                tokens.add(processNumber(next));
+            // these two don't swallow or move pos just to make programming
+            // process number and word a tiny bit simpler
+            if (Character.isDigit(next))
+                tokens.add(processNumber(next, pos++));
+            else if (Character.isAlphabetic(next))
+                tokens.add(processWord(next, pos++));
+            else {
+                System.err.format("Invalid character %c at %d:%d", next, line, pos);
+                System.exit(1);
+            }
 
 
         }
         return this.tokens;
     }
 
-    private Token processWord(char first) {
-        String value = String.valueOf(first);
+    private Token processWord(char next, int ipos) {
+        String value = String.valueOf(next);
         while (!reader.isDone()) {
-            var next = reader.peek(0);
+            next = reader.peek(0);
             if (next == '\r') {
                 reader.swallow();
                 pos++;
@@ -64,7 +71,7 @@ public class Lexer {
                 reader.swallow();
                 pos++;
             }
-            else if (next == '$' || next == '%') { // seemingly we don't care what's after this if it ends with this?
+            else if (next == '$' || next == '%') { // always considered end of word
                 value = value + String.valueOf(next);
                 reader.swallow();
                 pos++;
@@ -72,17 +79,16 @@ public class Lexer {
             }
             else break;
         }
-        return new Token(TokenType.WORD, line, pos, value);
+        return new Token(TokenType.WORD, line, ipos, value);
     }
 
-    private Token processNumber(char first) {
-        String value = String.valueOf(first);
+    private Token processNumber(char next, int ipos) {
+        String value = String.valueOf(next);
         boolean decimal = false;
         while (!reader.isDone()) {
-            var next = reader.peek(0);
+            next = reader.peek(0);
             if (next == '\r') {
-                reader.swallow();
-                pos++;
+                reader.swallow(); //not considered a real position
             }
             else if (Character.isDigit(next)) {
                 value = value + String.valueOf(next);
@@ -100,6 +106,6 @@ public class Lexer {
             }
             else break;
         }
-        return new Token(TokenType.NUMBER, line, pos, value);
+        return new Token(TokenType.NUMBER, line, ipos, value);
     }
 }

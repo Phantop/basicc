@@ -1,7 +1,7 @@
 package basic;
 
 public class Token {
-enum TokenType { WORD, NUMBER, ENDOFLINE };
+    enum TokenType { WORD, NUMBER, ENDOFLINE };
 
     private TokenType type;
     private String value;
@@ -20,7 +20,7 @@ enum TokenType { WORD, NUMBER, ENDOFLINE };
     }
 
     public String toString() {
-        if (value == null) return type.toString();
-        return type + "(" + value + ")";
+        if (value == null) return type.toString() + "\n";
+        return type + "(" + value + ")" + " ";
     }
 }

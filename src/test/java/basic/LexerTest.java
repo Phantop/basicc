@@ -1,4 +1,4 @@
-package hw1;
+package basic;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -6,7 +6,7 @@ import static org.junit.Assert.*;
 
 import java.util.Iterator;
 
-public class GraphTest {
+public class LexerTest {
 
     private static Graph<String, String> g = null;
     private static String[] s = null;

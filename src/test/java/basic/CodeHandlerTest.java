@@ -1,4 +1,4 @@
-package hw1;
+package basic;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -6,9 +6,9 @@ import static org.junit.Assert.*;
 
 import java.util.Iterator;
 
-public class GraphWrapperTest {
+public class LexerTest {
 
-    private static GraphWrapper g = null;
+    private static Graph<String, String> g = null;
     private static String[] s = null;
     private static final int NUM_NODES_TO_TEST = 2;
 
@@ -22,7 +22,7 @@ public class GraphWrapperTest {
 
     @Test
     public void testAddNode() {
-        g = new GraphWrapper();
+        g = new Graph<String, String>();
         for (String i : s) g.addNode(i);
         Iterator<String> iter = g.listNodes();
         assertEquals("0", iter.next());
