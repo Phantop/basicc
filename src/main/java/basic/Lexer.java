@@ -2,7 +2,6 @@ package basic;
 
 import java.lang.Character;
 import java.util.LinkedList;
-import java.lang.Exception;
 import java.io.IOException;
 import basic.Token.TokenType;
 
@@ -21,7 +20,7 @@ public class Lexer {
      */
     public Lexer(String filename) throws IOException {
         this.reader = new CodeHandler(filename);
-        this.line = 1;
+        this.line = 1; // lines are indexed from 1
         this.pos = 0;
     }
 
@@ -38,7 +37,8 @@ public class Lexer {
                 case ' ': // Space/tab consumption
                 case '\t':
                     pos++;
-                case '\r': // Doesn't increment pos like the other two
+                    continue;
+                case '\r': // Doesn't increment pos like the other two, basically not there
                     continue;
                 case '\n': // Newline handling, lex is per line according to rubric
                     tokens.add(new Token(TokenType.ENDOFLINE, line, pos));
@@ -56,8 +56,6 @@ public class Lexer {
                 System.err.format("Invalid character '%c' at %d:%d\n", next, line, pos);
                 throw new Exception();
             }
-
-
         }
         return tokens;
     }
@@ -74,18 +72,13 @@ public class Lexer {
         while (!reader.isDone()) {
             next = reader.peek(0);
             if (next == '\r') {
-                reader.swallow();
-                pos++;
+                reader.swallow(); //not considered a real position
             }
             else if (Character.isAlphabetic(next) || Character.isDigit(next) || next == '_') {
-                value = value + String.valueOf(next);
-                reader.swallow();
-                pos++;
+                value = addNext(value);
             }
             else if (next == '$' || next == '%') { // always considered end of word
-                value = value + String.valueOf(next);
-                reader.swallow();
-                pos++;
+                value = addNext(value);
                 break;
             }
             else break;
@@ -102,28 +95,31 @@ public class Lexer {
      */
     private Token processNumber(char next, int ipos) {
         String value = String.valueOf(next);
-        boolean decimal = false;
+        boolean decimal = false; // track if decimal has been placed yet
         while (!reader.isDone()) {
             next = reader.peek(0);
             if (next == '\r') {
                 reader.swallow(); //not considered a real position
             }
             else if (Character.isDigit(next)) {
-                value = value + String.valueOf(next);
-                reader.swallow();
-                pos++;
+                value = addNext(value);
             }
-            else if (next == '.') {
-                if (!decimal) {
-                    value = value + String.valueOf(next);
-                    reader.swallow();
-                    pos++;
-                    decimal = true;
-                }
-                else break; // stop consuming input if more than one decimal point
+            else if (next == '.' && !decimal) {
+                value = addNext(value);
+                decimal = true;
             }
             else break;
         }
         return new Token(TokenType.NUMBER, line, ipos, value);
+    }
+
+    /** Consistent method of adding next char in reader to input string
+     * @param value input string so far
+     * @return input string plus next char in reader
+     * @modifies increments reader read head
+     */
+    private String addNext(String value) {
+        pos++;
+        return value + reader.getChar();
     }
 }
