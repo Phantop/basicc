@@ -30,10 +30,9 @@ public class LexerTest{
             "NUMBER(7) NUMBER(4) NUMBER(3) NUMBER(1) ENDOFLINE\n" +
             "NUMBER(2) WORD(number) NUMBER(3) ENDOFLINE\n";
         String outputList = new String();
-        for (var tokens = l.lex(); tokens.size() != 0; tokens = l.lex()) {
-            for (Token t: tokens)
-                outputList = outputList + t;
-        }
+        var tokens = l.lex();
+        for (Token t: tokens)
+            outputList = outputList + t;
         Assert.assertEquals(expectedList, outputList);
     }
 

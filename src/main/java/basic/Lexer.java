@@ -44,7 +44,7 @@ public class Lexer {
                     tokens.add(new Token(TokenType.ENDOFLINE, line, pos));
                     line++;
                     pos = 0;
-                    return tokens;
+                    continue;
             }
 
             // pass in first letter to processing and increment pos

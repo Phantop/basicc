@@ -13,10 +13,9 @@ public class Basic {
         }
         try {
             Lexer lex = new Lexer(args[0]);
-            for (var tokens = lex.lex(); tokens.size() != 0; tokens = lex.lex()) {
-                for (Token t: tokens)
-                    System.out.print(t);
-            }
+            var tokens = lex.lex();
+            for (Token t: tokens)
+                System.out.print(t);
         }
         catch (Exception x) { // Just so running like this doesn't vomit ugly exceptions
             System.err.format("Exception: %s%n", x);
