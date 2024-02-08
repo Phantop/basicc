@@ -5,7 +5,47 @@ package basic;
  * the line, position of starting character, and string value if applicable
  */
 public class Token {
-    enum TokenType { WORD, NUMBER, ENDOFLINE };
+    enum TokenType {
+        // special
+        ENDOFLINE,
+        LABEL,
+        NUMBER,
+        STRINGLITERAL,
+        WORD,
+
+        // single char
+        DIVIDE,
+        DOLLAR,
+        EQUALS, // THERE IS NO == FOR EQUALITY, IT'S JUST ONE =
+        LPAREN,
+        MINUS,
+        MULTIPLY,
+        PERCENT,
+        PLUS,
+        RPAREN,
+
+        // two chars
+        LEQ,
+        NOTEQUALS,
+        REQ,
+
+        // special words
+        DATA,
+        END,
+        FOR,
+        FUNCTION,
+        GOSUB,
+        IF,
+        INPUT,
+        NEXT,
+        PRINT,
+        READ,
+        RETURN,
+        STEP,
+        THEN,
+        TO,
+        WHILE,
+    };
 
     private TokenType type;
     private String value;
@@ -42,5 +82,33 @@ public class Token {
     public String toString() {
         if (value == null) return type.toString() + "\n";
         return type + "(" + value + ")" + " ";
+    }
+
+    /* 
+     * @return the type of this token
+     */
+    public TokenType getType() {
+        return type;
+    }
+
+    /* 
+     * @return the line of this token
+     */
+    public int getLine() {
+        return line;
+    }
+
+    /* 
+     * @return the in-line position of this token
+     */
+    public int getPos() {
+        return pos;
+    }
+
+    /* 
+     * @return the value of this token. null if no value
+     */
+    public String getValue() {
+        return value;
     }
 }

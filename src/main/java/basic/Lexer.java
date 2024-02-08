@@ -1,17 +1,20 @@
 package basic;
 
-import java.lang.Character;
-import java.util.LinkedList;
-import java.io.IOException;
 import basic.Token.TokenType;
+import java.io.IOException;
+import java.lang.Character;
+import java.util.HashMap;
+import java.util.LinkedList;
 
 /**
  * The BASIC Lexer, which tokenizes the input file
  */
 public class Lexer {
-    private CodeHandler reader;
     private int line;
     private int pos;
+    private CodeHandler reader;
+    private HashMap<String, TokenType> knownSymbols;
+    private HashMap<String, TokenType> knownWords;
 
     /** Constructor. Reads file and attempts to create a CodeHandler for it
      * Also sets the line and pos to the start of the file
@@ -57,6 +60,9 @@ public class Lexer {
                 throw new Exception();
             }
         }
+        // final line *must* end with this, even if there's no final newline
+        if (tokens.getLast().getType() != TokenType.ENDOFLINE)
+            tokens.add(new Token(TokenType.ENDOFLINE, line, pos));
         return tokens;
     }
 
@@ -113,6 +119,10 @@ public class Lexer {
         return new Token(TokenType.NUMBER, line, ipos, value);
     }
 
+    private Token HandleStringLiteral(char next, int ipos) {
+        return null;
+    }
+
     /** Consistent method of adding next char in reader to input string
      * @param value input string so far
      * @return input string plus next char in reader
@@ -121,5 +131,39 @@ public class Lexer {
     private String addNext(String value) {
         pos++;
         return value + reader.getChar();
+    }
+
+    private void buildMaps() {
+        knownWords = new HashMap<String, TokenType>();
+        knownWords.put("data", TokenType.DATA);
+        knownWords.put("end", TokenType.END);
+        knownWords.put("for", TokenType.FOR);
+        knownWords.put("function", TokenType.FUNCTION);
+        knownWords.put("gosub", TokenType.GOSUB);
+        knownWords.put("if", TokenType.IF);
+        knownWords.put("input", TokenType.INPUT);
+        knownWords.put("next", TokenType.NEXT);
+        knownWords.put("number", TokenType.NUMBER);
+        knownWords.put("print", TokenType.PRINT);
+        knownWords.put("read", TokenType.READ);
+        knownWords.put("return", TokenType.RETURN);
+        knownWords.put("step", TokenType.STEP);
+        knownWords.put("then", TokenType.THEN);
+        knownWords.put("to", TokenType.TO);
+        knownWords.put("while", TokenType.WHILE);
+
+        knownSymbols = new HashMap<String, TokenType>();
+        knownSymbols.put("/", TokenType.DIVIDE);
+        knownSymbols.put("$", TokenType.DOLLAR);
+        knownSymbols.put("=", TokenType.EQUALS);
+        knownSymbols.put("(", TokenType.LPAREN);
+        knownSymbols.put("-", TokenType.MINUS);
+        knownSymbols.put("*", TokenType.MULTIPLY);
+        knownSymbols.put("%", TokenType.PERCENT);
+        knownSymbols.put("+", TokenType.PLUS);
+        knownSymbols.put(")", TokenType.RPAREN);
+        knownSymbols.put("<=", TokenType.LEQ);
+        knownSymbols.put("<>", TokenType.NOTEQUALS);
+        knownSymbols.put(">=", TokenType.REQ);
     }
 }
