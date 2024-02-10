@@ -75,11 +75,12 @@ public class Lexer {
     }
 
     /** WORD token processor
-     * Accepts letters, digits, and _ in token. Can end in $/%.
+     * Accepts letters, digits, and _ in token. Can end in $/%/:.
      * Stops consuming input at all other characters
      * @param next first character in the token
      * @param ipos position of first character of the token
      * @return full generated token according to rules for what is allowed in a WORD
+     * may be a token for a keyword
      */
     private Token processWord(char next, int ipos) {
         String value = String.valueOf(next);
@@ -102,6 +103,7 @@ public class Lexer {
             }
             else break;
         }
+
         if (knownWords.containsKey(value.toLowerCase()))
             return new Token(knownWords.get(value.toLowerCase()), line, ipos, null);
         return new Token(TokenType.WORD, line, ipos, value);
@@ -134,6 +136,12 @@ public class Lexer {
         return new Token(TokenType.NUMBER, line, ipos, value);
     }
 
+    /** Symbol token processor
+     * Accepts known symbols, checks next char for two-char symbols
+     * @param next first character in the token
+     * @param ipos position of first character of the token
+     * @return associated token for found symbol
+     */
     private Token processSymbol(char next, int ipos) {
         String value = String.valueOf(next);
         // kinda cheat-y way of accounting for two char symbols
@@ -143,6 +151,12 @@ public class Lexer {
         return new Token(knownSymbols.get(value), line, ipos, null);
     }
 
+    /** STRINGLITERAL token processor
+     * Reads in all content from read head until next unescaped "
+     * @param next first character in the token
+     * @param ipos position of first " of token
+     * @return literal token with value of contents
+     */
     private Token processLiteral(char next, int ipos) throws Exception {
         String value = "";
         while (!reader.isDone()) {
@@ -160,7 +174,12 @@ public class Lexer {
                 reader.swallow();
                 return new Token(TokenType.STRINGLITERAL, line, ipos, value);
             }
-            else
+            else if (next == '\n') { // still need to handle newlines in a literal
+                line++;
+                pos = 0;
+                value = value + reader.getChar();
+            }
+            else 
                 value = addNext(value);
         }
         System.err.format("Unclosed string literal at %d:%d\n", line, ipos);
@@ -177,6 +196,11 @@ public class Lexer {
         return value + reader.getChar();
     }
 
+    /** Builds hashmaps for known words and symbols
+     * Reinitializes both hashmaps on each run
+     * @modifies knownWords to have known words
+     * @modifies knownSymbols to have known syombols
+     */
     private void buildMaps() {
         knownWords = new HashMap<String, TokenType>();
         knownWords.put("data", TokenType.DATA);
@@ -206,7 +230,7 @@ public class Lexer {
         knownSymbols.put("*", TokenType.MULTIPLY);
         knownSymbols.put("+", TokenType.PLUS);
         knownSymbols.put(")", TokenType.RPAREN);
-        knownSymbols.put("<=", TokenType.LEQ); // need to special-case less/greater to check next char
+        knownSymbols.put("<=", TokenType.LEQ);
         knownSymbols.put("<>", TokenType.NOTEQUALS);
         knownSymbols.put(">=", TokenType.REQ);
     }
