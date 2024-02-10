@@ -5,3 +5,13 @@ an empty_line$is belw
 8 4  9999
 7 4 3 1
 2 number 3
+
+"this is a \"string\" literal"
+5 <= 1 > 2 + 1 - 2 * 3 +-=/
+
+data 1 2 3 4 5.5
+for i < 1
+this is not a FuNCTIon
+END then Step123
+hi: that < is a label
+while (pizza if req)

@@ -14,7 +14,7 @@ public class Token {
         WORD,
 
         // single char
-        DOLLAR,
+        DIVIDE,
         EQUALS, // THERE IS NO == FOR EQUALITY, IT'S JUST ONE =
         GREATER,
         LESS,
@@ -80,7 +80,8 @@ public class Token {
      * WORD/NUMBER: the value in parenthesis followed by a space
      */
     public String toString() {
-        if (value == null) return type.toString() + "\n";
+        if (type == TokenType.ENDOFLINE) return type.toString() + "\n";
+        if (value == null) return type.toString() + " ";
         return type + "(" + value + ")" + " ";
     }
 

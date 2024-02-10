@@ -13,8 +13,8 @@ public class Lexer {
     private int line;
     private int pos;
     private CodeHandler reader;
-    private HashMap<String, TokenType> knownSymbols;
-    private HashMap<String, TokenType> knownWords;
+    private static HashMap<String, TokenType> knownSymbols;
+    private static HashMap<String, TokenType> knownWords;
 
     /** Constructor. Reads file and attempts to create a CodeHandler for it
      * Also sets the line and pos to the start of the file
@@ -25,6 +25,8 @@ public class Lexer {
         this.reader = new CodeHandler(filename);
         this.line = 1; // lines are indexed from 1
         this.pos = 0;
+        if (knownWords == null)
+            buildMaps();
     }
 
     /** Line lexing method. Reads in the next line of the input and returns
@@ -136,8 +138,7 @@ public class Lexer {
         String value = String.valueOf(next);
         // kinda cheat-y way of accounting for two char symbols
         if (knownSymbols.containsKey(value + String.valueOf(reader.peek(0)))) {
-            pos++;
-            reader.swallow();
+            value = addNext(value);
         }
         return new Token(knownSymbols.get(value), line, ipos, null);
     }
