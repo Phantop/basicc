@@ -48,6 +48,9 @@ public class Lexer {
                     line++;
                     pos = 0;
                     continue;
+                case '"':
+                    tokens.add(processLiteral(next, pos++));
+                    continue;
             }
 
             // pass in first letter to processing and increment pos
@@ -55,8 +58,11 @@ public class Lexer {
                 tokens.add(processNumber(next, pos++));
             else if (Character.isAlphabetic(next))
                 tokens.add(processWord(next, pos++));
+            else if (knownSymbols.containsKey(String.valueOf(next))) {
+                tokens.add(processSymbol(next, pos++));
+            }
             else {
-                System.err.format("Invalid character '%c' at %d:%d\n", next, line, pos);
+                System.err.format("Invalid token '%c' at %d:%d\n", next, line, pos);
                 throw new Exception();
             }
         }
@@ -87,8 +93,15 @@ public class Lexer {
                 value = addNext(value);
                 break;
             }
+            else if (next == ':') {
+                pos++;
+                reader.swallow();
+                return new Token(TokenType.LABEL, line, ipos, value);
+            }
             else break;
         }
+        if (knownWords.containsKey(value.toLowerCase()))
+            return new Token(knownWords.get(value.toLowerCase()), line, ipos, null);
         return new Token(TokenType.WORD, line, ipos, value);
     }
 
@@ -119,8 +132,38 @@ public class Lexer {
         return new Token(TokenType.NUMBER, line, ipos, value);
     }
 
-    private Token HandleStringLiteral(char next, int ipos) {
-        return null;
+    private Token processSymbol(char next, int ipos) {
+        String value = String.valueOf(next);
+        // kinda cheat-y way of accounting for two char symbols
+        if (knownSymbols.containsKey(value + String.valueOf(reader.peek(0)))) {
+            pos++;
+            reader.swallow();
+        }
+        return new Token(knownSymbols.get(value), line, ipos, null);
+    }
+
+    private Token processLiteral(char next, int ipos) throws Exception {
+        String value = "";
+        while (!reader.isDone()) {
+            next = reader.peek(0);
+            if (next == '\r') {
+                reader.swallow(); //not considered a real position
+            }
+            else if (next == '\\' && reader.peek(1) == '"') {
+                pos++;
+                reader.swallow();
+                value = addNext(value);
+            }
+            else if (next == '"') { // always considered end of word
+                pos++;
+                reader.swallow();
+                return new Token(TokenType.STRINGLITERAL, line, ipos, value);
+            }
+            else
+                value = addNext(value);
+        }
+        System.err.format("Unclosed string literal at %d:%d\n", line, ipos);
+        throw new Exception();
     }
 
     /** Consistent method of adding next char in reader to input string
@@ -154,15 +197,15 @@ public class Lexer {
 
         knownSymbols = new HashMap<String, TokenType>();
         knownSymbols.put("/", TokenType.DIVIDE);
-        knownSymbols.put("$", TokenType.DOLLAR);
         knownSymbols.put("=", TokenType.EQUALS);
+        knownSymbols.put(">", TokenType.GREATER);
+        knownSymbols.put("<", TokenType.LESS);
         knownSymbols.put("(", TokenType.LPAREN);
         knownSymbols.put("-", TokenType.MINUS);
         knownSymbols.put("*", TokenType.MULTIPLY);
-        knownSymbols.put("%", TokenType.PERCENT);
         knownSymbols.put("+", TokenType.PLUS);
         knownSymbols.put(")", TokenType.RPAREN);
-        knownSymbols.put("<=", TokenType.LEQ);
+        knownSymbols.put("<=", TokenType.LEQ); // need to special-case less/greater to check next char
         knownSymbols.put("<>", TokenType.NOTEQUALS);
         knownSymbols.put(">=", TokenType.REQ);
     }

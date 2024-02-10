@@ -14,13 +14,13 @@ public class Token {
         WORD,
 
         // single char
-        DIVIDE,
         DOLLAR,
         EQUALS, // THERE IS NO == FOR EQUALITY, IT'S JUST ONE =
+        GREATER,
+        LESS,
         LPAREN,
         MINUS,
         MULTIPLY,
-        PERCENT,
         PLUS,
         RPAREN,
 
