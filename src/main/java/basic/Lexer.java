@@ -145,7 +145,7 @@ public class Lexer {
     private Token processSymbol(char next, int ipos) {
         String value = String.valueOf(next);
         // kinda cheat-y way of accounting for two char symbols
-        if (knownSymbols.containsKey(value + String.valueOf(reader.peek(0)))) {
+        if (reader.remainder().length() > 0 && knownSymbols.containsKey(value + reader.peekString(1))) {
             value = addNext(value);
         }
         return new Token(knownSymbols.get(value), line, ipos, null);
