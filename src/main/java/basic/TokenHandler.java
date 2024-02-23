@@ -5,16 +5,17 @@ import java.util.LinkedList;
 import java.util.Optional;
 
 /**
- * Handles reading for a single inputted filename
+ * Handles reading for a list of lexed tokens
  */
 public class TokenHandler {
     private LinkedList<Token> stream;
 
-    /** Creates CodeHandler
-     * @param filename string path to input file
-     * @throws IOException on invalid file
+    /** Creates TokenHandler
+     * @param input list
+     * @throws Exception on invalid stream 
      */
-    public TokenHandler(LinkedList<Token> stream) {
+    public TokenHandler(LinkedList<Token> stream) throws Exception {
+        if (stream == null) throw new Exception();
         this.stream = stream;
     }
 

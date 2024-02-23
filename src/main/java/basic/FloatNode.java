@@ -1,7 +1,12 @@
 package basic;
 
-public class IntegerNode extends Node {
+public class FloatNode extends Node {
+    private float value;
+
+    public FloatNode(float in) {
+        value = in;
+    }
     public String toString() {
-        return null;
+        return String.valueOf(value);
     }
 }

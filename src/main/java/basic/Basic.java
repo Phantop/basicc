@@ -12,10 +12,15 @@ public class Basic {
             System.exit(1);
         }
         try {
+            System.out.println("Peforming lexer step:");
             Lexer lex = new Lexer(args[0]);
             var tokens = lex.lex();
             for (Token t: tokens)
                 System.out.print(t);
+            System.out.println("Peforming parser step:");
+            Parser p = new Parser(tokens);
+            var ast = p.parse();
+            System.out.println(ast.toString());
         }
         catch (Exception x) { // Just so running like this doesn't vomit ugly exceptions
             System.err.format("Exception: %s%n", x);
