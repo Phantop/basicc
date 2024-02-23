@@ -32,6 +32,9 @@ public class Parser {
         return reader.matchAndRemove(TokenType.ENDOFLINE).isPresent();
     }
 
+    /**
+     * Matches and returns an Expression: TERM {+|- TERM}
+     */
     private Node expression() throws Exception {
         Optional<Token> next;
         Node left = term();
@@ -50,6 +53,10 @@ public class Parser {
         }
         return left;
     }
+
+    /**
+     * Matches and returns a Term: FACTOR {*|/ FACTOR}
+     */
     private Node term() throws Exception {
         Optional<Token> next;
         Node left = factor();
@@ -68,6 +75,10 @@ public class Parser {
         }
         return left;
     }
+
+    /**
+     * Matches and returns a Factor: number | ( EXPRESSION )
+     */
     private Node factor() throws Exception {
         Optional<Token> next;
         int sign = 1;

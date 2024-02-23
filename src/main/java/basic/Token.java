@@ -47,10 +47,10 @@ public class Token {
         WHILE,
     };
 
-    private TokenType type;
-    private String value;
-    private int line;
-    private int pos;
+    private final TokenType type;
+    private final String value;
+    private final int line;
+    private final int pos;
 
     /* Valueless constructor. Intended specifically for ENDOFLINE tokens currently
      * @param type the token type

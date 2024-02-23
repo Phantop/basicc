@@ -8,9 +8,9 @@ public class MathOpNode extends Node {
         MULTIPLY
     }
 
-    private Operation op;
-    private Node left;
-    private Node right;
+    private final Operation op;
+    private final Node left;
+    private final Node right;
 
     public MathOpNode(Node left, Operation op, Node right) {
         this.op = op;
@@ -18,21 +18,37 @@ public class MathOpNode extends Node {
         this.right = right;
     }
 
+    /**
+     * @return math operation as a readable equation surrounded by parenthesis
+     */
     public String toString() {
-        return "(" + left.toString() + this.opChar() + right.toString() + ")";
-    }
-
-    private String opChar() {
+        String o = "";
         switch (this.op) {
             case Operation.ADD:
-                return "+";
+                o = "+";
+                break;
             case Operation.SUBTRACT:
-                return "-";
+                o = "-";
+                break;
             case Operation.DIVIDE:
-                return "/";
+                o = "/";
+                break;
             case Operation.MULTIPLY:
-                return "*";
+                o = "*";
+                break;
         }
-        return ""; // i don't think this is reachable lol but the compiler complains
+        return "(" + left.toString() + o + right.toString() + ")";
+    }
+
+    public Node getLeft() {
+        return left;
+    }
+
+    public Node getRight() {
+        return right;
+    }
+
+    public Operation getOp() {
+        return op;
     }
 }

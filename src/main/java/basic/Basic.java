@@ -17,14 +17,15 @@ public class Basic {
             var tokens = lex.lex();
             for (Token t: tokens)
                 System.out.print(t);
+
             System.out.println("Peforming parser step:");
             Parser p = new Parser(tokens);
             var ast = p.parse();
-            System.out.println(ast.toString());
+            System.out.print(ast.toString());
         }
         catch (Exception x) { // Just so running like this doesn't vomit ugly exceptions
             System.err.format("Exception: %s%n", x);
-            x.printStackTrace();
+            //x.printStackTrace(); // uncomment when needed for debugging
             System.exit(1);
         }
     }
