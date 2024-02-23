@@ -20,9 +20,10 @@ public class Parser {
 
     public ProgramNode parse() throws Exception {
         var program = new ProgramNode();
+        while (acceptSeparators()); // eat any separators between stuff
         while (reader.moreTokens()) {
-            while (acceptSeparators()); // eat any separators between stuff
             program.add(expression()); // just assume anything not a separator is an expression for now
+            while (acceptSeparators()); // eat any separators between stuff
         }
         return program;
     }
@@ -91,6 +92,9 @@ public class Parser {
             if (!next.isPresent()) throw new Exception();
             return expNode;
         }
+        next = reader.peek(0);
+        var bad = next.get();
+        System.err.format("Invalid token '%s' at %d:%d\n", bad.getType().toString(), bad.getLine(), bad.getPos());
         throw new Exception();
     }
 }
