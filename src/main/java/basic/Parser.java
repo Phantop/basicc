@@ -99,8 +99,12 @@ public class Parser {
         next = reader.matchAndRemove(TokenType.LPAREN);
         if (next.isPresent()) {
             Node expNode = expression();
+            var bad = next.get();
             next = reader.matchAndRemove(TokenType.RPAREN);
-            if (!next.isPresent()) throw new Exception();
+            if (!next.isPresent()) {
+                System.err.format("Missing closing ')' for opening '(' at %d:%d\n", bad.getLine(), bad.getPos());
+                throw new Exception();
+            }
             return expNode;
         }
         next = reader.peek(0);
