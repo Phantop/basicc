@@ -201,7 +201,7 @@ public class Lexer {
      * @modifies knownWords to have known words
      * @modifies knownSymbols to have known syombols
      */
-    private void buildMaps() {
+    private static void buildMaps() {
         knownWords = new HashMap<String, TokenType>();
         knownWords.put("data", TokenType.DATA);
         knownWords.put("end", TokenType.END);
@@ -211,7 +211,6 @@ public class Lexer {
         knownWords.put("if", TokenType.IF);
         knownWords.put("input", TokenType.INPUT);
         knownWords.put("next", TokenType.NEXT);
-        knownWords.put("number", TokenType.NUMBER);
         knownWords.put("print", TokenType.PRINT);
         knownWords.put("read", TokenType.READ);
         knownWords.put("return", TokenType.RETURN);
@@ -221,6 +220,7 @@ public class Lexer {
         knownWords.put("while", TokenType.WHILE);
 
         knownSymbols = new HashMap<String, TokenType>();
+        knownSymbols.put(",", TokenType.COMMA);
         knownSymbols.put("/", TokenType.DIVIDE);
         knownSymbols.put("=", TokenType.EQUALS);
         knownSymbols.put(">", TokenType.GREATER);

@@ -25,7 +25,7 @@ public class Basic {
         }
         catch (Exception x) { // Just so running like this doesn't vomit ugly exceptions
             System.err.format("Exception: %s%n", x);
-            //x.printStackTrace(); // uncomment when needed for debugging
+            x.printStackTrace(); // uncomment when needed for debugging
             System.exit(1);
         }
     }

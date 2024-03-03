@@ -14,6 +14,7 @@ public class Token {
         WORD,
 
         // single char
+        COMMA,
         DIVIDE,
         EQUALS, // THERE IS NO == FOR EQUALITY, IT'S JUST ONE =
         GREATER,

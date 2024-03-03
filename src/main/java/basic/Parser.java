@@ -2,9 +2,6 @@ package basic;
 
 import basic.Token.TokenType;
 import basic.MathOpNode.Operation;
-import java.io.IOException;
-import java.lang.Character;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Optional;
 
@@ -20,16 +17,82 @@ public class Parser {
 
     public ProgramNode parse() throws Exception {
         var program = new ProgramNode();
-        while (acceptSeparators()); // eat any separators between stuff
+        while (acceptSeparators()); // eat any separators before stuff
         while (reader.moreTokens()) {
-            program.add(expression()); // just assume anything not a separator is an expression for now
-            while (acceptSeparators()); // eat any separators between stuff
+            statements().ifPresent(x -> program.add(x));
+            while (acceptSeparators()); // eat any separators between/after stuff
         }
         return program;
     }
 
     private boolean acceptSeparators() {
         return reader.matchAndRemove(TokenType.ENDOFLINE).isPresent();
+    }
+
+    private Optional<StatementsNode> statements() throws Exception {
+        var out = new StatementsNode();
+        Optional<StatementNode> line;
+        do {
+            line = statement();
+            if (line.isPresent()) out.add(line.get());
+            if (!acceptSeparators()) { // statements should be separated
+                var next = reader.peek(0);
+                var bad = next.get();
+                System.err.format("Missing separator after statement at %d:%d\n", bad.getType().toString(), bad.getLine(), bad.getPos());
+            }
+            while (acceptSeparators()); // eat any additional separators
+        } while (line.isPresent() && reader.moreTokens()); // tokens can finish while building statements list
+        if (out.isEmpty()) return Optional.empty();
+        return Optional.of(out);
+    }
+
+    /**
+     * @returns one of the valid BASIC statements
+     */
+    private Optional<StatementNode> statement() throws Exception {
+        var out = printStatement();
+        if (out.isPresent()) return out;
+        out = assignment();
+        if (out.isPresent()) return out;
+        return Optional.empty();
+    }
+
+    /**
+     * @returns assignmentNode as a StatementNode
+     */
+    private Optional<StatementNode> assignment() throws Exception {
+        Optional<Token> next;
+        // must start with variable word
+        next = reader.matchAndRemove(TokenType.WORD);
+        if (next.isPresent()) {
+            var left = next.get();
+            next = reader.matchAndRemove(TokenType.EQUALS);
+            if (!next.isPresent()) {
+                System.err.format("Missing '=' for assigning variable %s at %d:%d\n", left.getValue(), left.getLine(), left.getPos());
+                throw new Exception();
+            }
+            var right = expression();
+            var leftnode = new VariableNode(left.getValue());
+            var out = new AssignmentNode(leftnode, right);
+            return Optional.of(out);
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * @returns printNode as a StatementNode
+     */
+    private Optional<StatementNode> printStatement() throws Exception {
+        Optional<Token> next;
+        var out = new PrintNode();
+        next = reader.matchAndRemove(TokenType.PRINT);
+        // allowing for print to print nothing
+        while (next.isPresent()) {
+            out.add(expression());
+            next = reader.matchAndRemove(TokenType.COMMA);
+        }
+        if (out.isEmpty()) return Optional.empty();
+        return Optional.of(out);
     }
 
     /**
@@ -94,6 +157,13 @@ public class Parser {
             {
                 float val = sign * Float.parseFloat(next.get().getValue());
                 return new FloatNode(val);
+            }
+        }
+        else {
+            next = reader.matchAndRemove(TokenType.WORD);
+            if (next.isPresent()) {
+                String val = next.get().getValue();
+                return new VariableNode(val);
             }
         }
         next = reader.matchAndRemove(TokenType.LPAREN);
