@@ -85,17 +85,23 @@ public class ParserTest {
     @Test
     public void testPrint() throws Exception {
         var tokens = new LinkedList<Token>();
+        tokens.add(new Token(TokenType.WORD, 0, 0, "z"));
+        tokens.add(new Token(TokenType.EQUALS, 0, 0));
+        tokens.add(new Token(TokenType.STRINGLITERAL, 0, 0, "z"));
+        tokens.add(new Token(TokenType.ENDOFLINE, 0, 0));
         tokens.add(new Token(TokenType.PRINT, 0, 0));
         tokens.add(new Token(TokenType.WORD, 0, 0, "x"));
         tokens.add(new Token(TokenType.PLUS, 0, 0));
         tokens.add(new Token(TokenType.WORD, 0, 0, "y"));
         tokens.add(new Token(TokenType.COMMA, 0, 0));
         tokens.add(new Token(TokenType.WORD, 0, 0, "z"));
+        tokens.add(new Token(TokenType.COMMA, 0, 0));
+        tokens.add(new Token(TokenType.STRINGLITERAL, 0, 0, "z"));
         tokens.add(new Token(TokenType.ENDOFLINE, 0, 0));
         p = new Parser(tokens);
         var ast = p.parse();
         var output = ast.toString();
-        var expected = "PRINT (x+y), z,\n\n";
+        var expected = "z=\"z\"\nPRINT (x+y), z, \"z\",\n\n";
         Assert.assertEquals(expected, output);
     }
 
@@ -157,12 +163,18 @@ public class ParserTest {
     public void testStatementSeparation() throws Exception {
         var tokens = new LinkedList<Token>();
         // token representation of 'x=3.1415\nx=
+        tokens.add(new Token(TokenType.PRINT, 0, 0));
         tokens.add(new Token(TokenType.WORD, 0, 0, "x"));
-        tokens.add(new Token(TokenType.EQUALS, 0, 0));
-        tokens.add(new Token(TokenType.NUMBER, 0, 0, "3.1415"));
+        tokens.add(new Token(TokenType.PLUS, 0, 0));
+        tokens.add(new Token(TokenType.WORD, 0, 0, "y"));
+        tokens.add(new Token(TokenType.COMMA, 0, 0));
+        tokens.add(new Token(TokenType.WORD, 0, 0, "z"));
+        tokens.add(new Token(TokenType.PRINT, 0, 0));
         tokens.add(new Token(TokenType.WORD, 0, 0, "x"));
-        tokens.add(new Token(TokenType.EQUALS, 0, 0));
-        tokens.add(new Token(TokenType.NUMBER, 0, 0, "3.1415"));
+        tokens.add(new Token(TokenType.PLUS, 0, 0));
+        tokens.add(new Token(TokenType.WORD, 0, 0, "y"));
+        tokens.add(new Token(TokenType.COMMA, 0, 0));
+        tokens.add(new Token(TokenType.WORD, 0, 0, "z"));
         tokens.add(new Token(TokenType.ENDOFLINE, 0, 0));
         p = new Parser(tokens);
         var ast = p.parse();

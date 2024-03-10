@@ -159,7 +159,8 @@ public class Parser {
             next = reader.matchAndRemove(TokenType.STRINGLITERAL);
             if (next.isPresent())
                 right = new StringNode(next.get().getValue());
-            right = expression();
+            else
+                right = expression();
 
             var leftnode = new VariableNode(left.getValue());
             var out = new AssignmentNode(leftnode, right);
