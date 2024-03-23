@@ -28,7 +28,7 @@ public class Token {
         // two chars
         LEQ,
         NOTEQUALS,
-        REQ,
+        GEQ,
 
         // special words
         DATA,
@@ -46,6 +46,15 @@ public class Token {
         THEN,
         TO,
         WHILE,
+
+        // function invocations
+        LEFT,
+        MID,
+        NUM,
+        RANDOM,
+        RIGHT,
+        VAL,
+        VALF
     };
 
     private final TokenType type;

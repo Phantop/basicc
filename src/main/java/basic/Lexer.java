@@ -219,6 +219,14 @@ public class Lexer {
         knownWords.put("to", TokenType.TO);
         knownWords.put("while", TokenType.WHILE);
 
+        knownWords.put("left$", TokenType.LEFT);
+        knownWords.put("right$", TokenType.RIGHT);
+        knownWords.put("random", TokenType.RANDOM);
+        knownWords.put("mid$", TokenType.MID);
+        knownWords.put("num$", TokenType.NUM);
+        knownWords.put("val", TokenType.VAL);
+        knownWords.put("val%", TokenType.VALF);
+
         knownSymbols = new HashMap<String, TokenType>();
         knownSymbols.put(",", TokenType.COMMA);
         knownSymbols.put("/", TokenType.DIVIDE);
@@ -232,6 +240,6 @@ public class Lexer {
         knownSymbols.put(")", TokenType.RPAREN);
         knownSymbols.put("<=", TokenType.LEQ);
         knownSymbols.put("<>", TokenType.NOTEQUALS);
-        knownSymbols.put(">=", TokenType.REQ);
+        knownSymbols.put(">=", TokenType.GEQ);
     }
 }

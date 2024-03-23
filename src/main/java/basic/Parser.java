@@ -2,6 +2,8 @@ package basic;
 
 import basic.Token.TokenType;
 import basic.MathOpNode.Operation;
+import basic.BooleanNode.Comparison;
+import basic.FunctionNode.Invocation;
 import java.util.LinkedList;
 import java.util.Optional;
 
@@ -54,20 +56,201 @@ public class Parser {
      * @returns one of the valid BASIC statements
      */
     private Optional<StatementNode> statement() throws Exception {
-        Optional<StatementNode> out;
+        Optional<StatementNode> out = Optional.empty();
 
-        out = printStatement();
-        if (out.isPresent()) return out;
-        out = dataStatement();
-        if (out.isPresent()) return out;
-        out = readStatement();
-        if (out.isPresent()) return out;
-        out = inputStatement();
-        if (out.isPresent()) return out;
-        out = assignment();
-        if (out.isPresent()) return out;
+        Optional<Token> next = reader.matchAndRemove(TokenType.LABEL);
+        while (acceptSeparators());
 
+        if (!out.isPresent())
+            out = printStatement();
+        if (!out.isPresent())
+            out = dataStatement();
+        if (!out.isPresent())
+            out = readStatement();
+        if (!out.isPresent())
+            out = inputStatement();
+        if (!out.isPresent())
+            out = gosubStatement();
+        if (!out.isPresent())
+            out = returnStatement();
+        if (!out.isPresent())
+            out = endStatement();
+        if (!out.isPresent())
+            out = forStatement();
+        if (!out.isPresent())
+            out = ifStatement();
+        if (!out.isPresent())
+            out = whileStatement();
+        if (!out.isPresent())
+            out = assignment();
+
+        if (next.isPresent()) {
+            // we assume that a label has a statement after it, so out isn't empty
+            var labeled = new LabeledStatementNode(next.get().getValue(), out.get());
+            return Optional.of(labeled);
+        }
+
+        return out;
+    }
+
+    private Optional<Node> functionInvocation() throws Exception {
+        Invocation op = null;
+        Optional<Token> next;
+
+        if (op == null) {
+            next = reader.matchAndRemove(TokenType.LEFT);
+            if (next.isPresent())
+                op = Invocation.LEFT;
+        }
+        if (op == null) {
+            next = reader.matchAndRemove(TokenType.MID);
+            if (next.isPresent())
+                op = Invocation.MID;
+        }
+        if (op == null) {
+            next = reader.matchAndRemove(TokenType.NUM);
+            if (next.isPresent())
+                op = Invocation.NUM;
+        }
+        if (op == null) {
+            next = reader.matchAndRemove(TokenType.RANDOM);
+            if (next.isPresent())
+                op = Invocation.RANDOM;
+        }
+        if (op == null) {
+            next = reader.matchAndRemove(TokenType.RIGHT);
+            if (next.isPresent())
+                op = Invocation.RIGHT;
+        }
+        if (op == null) {
+            next = reader.matchAndRemove(TokenType.VAL);
+            if (next.isPresent())
+                op = Invocation.VAL;
+        }
+        if (op == null) {
+            next = reader.matchAndRemove(TokenType.VALF);
+            if (next.isPresent())
+                op = Invocation.VALF;
+        }
+        if (op == null)
+            return Optional.empty();
+
+        var out = new FunctionNode(op);
+
+        next = reader.matchAndRemove(TokenType.LPAREN);
+        if (!next.isPresent())
+            handleError("Missing opening parenthesis for function at %d:%d\n");
+
+        while (next.isPresent()) {
+            next = reader.matchAndRemove(TokenType.STRINGLITERAL);
+            if (next.isPresent())
+                out.add(new StringNode(next.get().getValue()));
+            else
+                out.add(expression());
+            next = reader.matchAndRemove(TokenType.COMMA);
+        }
+
+        next = reader.matchAndRemove(TokenType.RPAREN);
+        if (!next.isPresent())
+            handleError("Missing closing parenthesis for function at %d:%d\n");
+
+        return Optional.of(out);
+    }
+
+    private Optional<StatementNode> forStatement() throws Exception {
+        Optional<Token> next;
+        next = reader.matchAndRemove(TokenType.FOR);
+        if (next.isPresent()) {
+            next = reader.matchAndRemove(TokenType.WORD);
+            if (!next.isPresent())
+                handleError("Missing variable name for FOR at %d:%d\n");
+            var variable = new VariableNode(next.get().getValue());
+
+            next = reader.matchAndRemove(TokenType.EQUALS);
+            if (!next.isPresent())
+                handleError("Missing = sign for FOR at %d:%d\n");
+
+            next = reader.matchAndRemove(TokenType.NUMBER);
+            if (!next.isPresent())
+                handleError("Missing starting number for FOR at %d:%d\n");
+            int start = Integer.parseInt(next.get().getValue());
+
+            next = reader.matchAndRemove(TokenType.TO);
+            if (!next.isPresent())
+                handleError("Missing TO for FOR at %d:%d\n");
+
+            next = reader.matchAndRemove(TokenType.NUMBER);
+            if (!next.isPresent())
+                handleError("Missing ending number for FOR at %d:%d\n");
+            int end = Integer.parseInt(next.get().getValue());
+
+            next = reader.matchAndRemove(TokenType.STEP);
+            if (!next.isPresent()) {
+                var out = new ForNode(variable, start, end);
+                return Optional.of(out);
+            }
+
+            next = reader.matchAndRemove(TokenType.NUMBER);
+            if (!next.isPresent())
+                handleError("Missing step number for FOR at %d:%d\n");
+            int step = Integer.parseInt(next.get().getValue());
+            var out = new ForNode(variable, start, end, step);
+            return Optional.of(out);
+        }
         return Optional.empty();
+    }
+
+    private Optional<StatementNode> gosubStatement() throws Exception {
+        Optional<Token> next;
+        next = reader.matchAndRemove(TokenType.GOSUB);
+        if (next.isPresent()) {
+            next = reader.matchAndRemove(TokenType.WORD);
+            if (!next.isPresent())
+                handleError("Missing identifier for GOSUB at %d:%d\n");
+            var out = new GosubNode(next.get().getValue());
+            return Optional.of(out);
+        }
+        return Optional.empty();
+    }
+
+    private Optional<StatementNode> whileStatement() throws Exception {
+        Optional<Token> next;
+        next = reader.matchAndRemove(TokenType.WHILE);
+        if (next.isPresent()) {
+            var condition = booleanExpression();
+            next = reader.matchAndRemove(TokenType.WORD);
+            if (!next.isPresent())
+                handleError("Missing end label for WHILEat %d:%d\n");
+            var out = new WhileNode(condition, next.get().getValue());
+            return Optional.of(out);
+        }
+        return Optional.empty();
+    }
+
+    private Optional<StatementNode> ifStatement() throws Exception {
+        Optional<Token> next;
+        next = reader.matchAndRemove(TokenType.IF);
+        if (next.isPresent()) {
+            var condition = booleanExpression();
+            next = reader.matchAndRemove(TokenType.THEN);
+            if (!next.isPresent())
+                handleError("Missing then for IF at %d:%d\n");
+            var out = new IfNode(condition);
+            return Optional.of(out);
+        }
+        return Optional.empty();
+    }
+
+    private Optional<StatementNode> endStatement() {
+        Optional<Token> next = reader.matchAndRemove(TokenType.END);
+        if (next.isEmpty()) return Optional.empty();
+        return Optional.of(new EndNode());
+    }
+
+    private Optional<StatementNode> returnStatement() {
+        Optional<Token> next = reader.matchAndRemove(TokenType.RETURN);
+        if (next.isEmpty()) return Optional.empty();
+        return Optional.of(new ReturnNode());
     }
 
     /**
@@ -190,11 +373,64 @@ public class Parser {
     }
 
     /**
+     * Matches and returns a booleans Expression: exp {<|>|=|<>|<=|>=} exp
+     */
+    private BooleanNode booleanExpression() throws Exception {
+        Optional<Token> next;
+        Comparison comp = null;
+        Node left = expression();
+
+        if (comp == null) {
+            next = reader.matchAndRemove(TokenType.EQUALS);
+            if (next.isPresent())
+                comp = Comparison.EQUALS;
+        }
+        if (comp == null) {
+            next = reader.matchAndRemove(TokenType.LESS);
+            if (next.isPresent())
+                comp = Comparison.LESS;
+        }
+        if (comp == null) {
+            next = reader.matchAndRemove(TokenType.GREATER);
+            if (next.isPresent())
+                comp = Comparison.GREATER;
+        }
+        if (comp == null) {
+            next = reader.matchAndRemove(TokenType.NOTEQUALS);
+            if (next.isPresent())
+                comp = Comparison.NOTEQUALS;
+        }
+        if (comp == null) {
+            next = reader.matchAndRemove(TokenType.LEQ);
+            if (next.isPresent())
+                comp = Comparison.LEQ;
+        }
+        if (comp == null) {
+            next = reader.matchAndRemove(TokenType.GEQ);
+            if (next.isPresent())
+                comp = Comparison.GEQ;
+        }
+        if (comp == null)
+            handleError("Missing comparator for boolean at %d:%d\n");
+
+        Node right = expression();
+        var out = new BooleanNode(left, comp, right);
+
+        return out;
+    }
+
+
+    /**
      * Matches and returns an Expression: TERM {+|- TERM}
      */
     private Node expression() throws Exception {
         Optional<Token> next;
-        Node left = term();
+        var func = functionInvocation();
+        Node left;
+        if (func.isPresent())
+            left = func.get();
+        else
+            left = term();
         while (true) {
             next = reader.matchAndRemove(TokenType.PLUS);
             if (next.isPresent()) {
