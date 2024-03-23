@@ -35,6 +35,7 @@ public class Parser {
         var next = reader.peek(0);
         var bad = next.get();
         System.err.format(msg, bad.getLine(), bad.getPos());
+        System.out.println("TokenHandler starts with: " + next.get());
         throw new Exception();
     }
 
@@ -77,6 +78,8 @@ public class Parser {
             out = endStatement();
         if (!out.isPresent())
             out = forStatement();
+        if (!out.isPresent())
+            out = nextStatement();
         if (!out.isPresent())
             out = ifStatement();
         if (!out.isPresent())
@@ -141,18 +144,22 @@ public class Parser {
         if (!next.isPresent())
             handleError("Missing opening parenthesis for function at %d:%d\n");
 
-        while (next.isPresent()) {
+        boolean argless = reader.matchAndRemove(TokenType.RPAREN).isPresent();
+        while (!argless && next.isPresent()) {
             next = reader.matchAndRemove(TokenType.STRINGLITERAL);
-            if (next.isPresent())
+            if (next.isPresent()) {
                 out.add(new StringNode(next.get().getValue()));
-            else
+            }
+            else {
                 out.add(expression());
+            }
             next = reader.matchAndRemove(TokenType.COMMA);
         }
-
-        next = reader.matchAndRemove(TokenType.RPAREN);
-        if (!next.isPresent())
-            handleError("Missing closing parenthesis for function at %d:%d\n");
+        if (!argless) {
+            next = reader.matchAndRemove(TokenType.RPAREN);
+            if (!next.isPresent())
+                handleError("Missing closing parenthesis for function at %d:%d\n");
+        }
 
         return Optional.of(out);
     }
@@ -200,6 +207,20 @@ public class Parser {
         return Optional.empty();
     }
 
+    private Optional<StatementNode> nextStatement() throws Exception {
+        Optional<Token> next;
+        next = reader.matchAndRemove(TokenType.NEXT);
+        if (next.isPresent()) {
+            next = reader.matchAndRemove(TokenType.WORD);
+            if (!next.isPresent())
+                handleError("Missing variable for NEXT at %d:%d\n");
+            var variable = new VariableNode(next.get().getValue());
+            var out = new NextNode(variable);
+            return Optional.of(out);
+        }
+        return Optional.empty();
+    }
+
     private Optional<StatementNode> gosubStatement() throws Exception {
         Optional<Token> next;
         next = reader.matchAndRemove(TokenType.GOSUB);
@@ -233,9 +254,13 @@ public class Parser {
         if (next.isPresent()) {
             var condition = booleanExpression();
             next = reader.matchAndRemove(TokenType.THEN);
-            if (!next.isPresent())
+            if (!next.isPresent()) {
                 handleError("Missing then for IF at %d:%d\n");
-            var out = new IfNode(condition);
+            }
+            next = reader.matchAndRemove(TokenType.WORD);
+            if (!next.isPresent())
+                handleError("Missing target label for IF at %d:%d\n");
+            var out = new IfNode(condition, next.get().getValue());
             return Optional.of(out);
         }
         return Optional.empty();
@@ -410,12 +435,14 @@ public class Parser {
             if (next.isPresent())
                 comp = Comparison.GEQ;
         }
-        if (comp == null)
+        if (comp == null) {
             handleError("Missing comparator for boolean at %d:%d\n");
+        }
 
         Node right = expression();
         var out = new BooleanNode(left, comp, right);
 
+        System.out.println(out);
         return out;
     }
 
@@ -426,11 +453,9 @@ public class Parser {
     private Node expression() throws Exception {
         Optional<Token> next;
         var func = functionInvocation();
-        Node left;
         if (func.isPresent())
-            left = func.get();
-        else
-            left = term();
+            return func.get();
+        Node left = term();
         while (true) {
             next = reader.matchAndRemove(TokenType.PLUS);
             if (next.isPresent()) {
