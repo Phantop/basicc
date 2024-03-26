@@ -505,4 +505,22 @@ public class ParserTest {
         p = new Parser(tokens);
         var ast = p.parse();
     }
+
+    @Test
+    public void testFunctionFactor() throws Exception {
+        var tokens = new LinkedList<Token>();
+        tokens.add(new Token(TokenType.WORD, 0, 0, "x"));
+        tokens.add(new Token(TokenType.EQUALS, 0, 0));
+        tokens.add(new Token(TokenType.NUMBER, 0, 0, "2"));
+        tokens.add(new Token(TokenType.MULTIPLY, 0, 0));
+        tokens.add(new Token(TokenType.RANDOM, 0, 0));
+        tokens.add(new Token(TokenType.LPAREN, 0, 0));
+        tokens.add(new Token(TokenType.RPAREN, 0, 0));
+        tokens.add(new Token(TokenType.ENDOFLINE, 0, 0));
+        p = new Parser(tokens);
+        var ast = p.parse();
+        var output = ast.toString();
+        var expected = "x=(2*RANDOM())\n\n";
+        Assert.assertEquals(expected, output);
+    }
 }

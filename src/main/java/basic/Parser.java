@@ -452,9 +452,6 @@ public class Parser {
      */
     private Node expression() throws Exception {
         Optional<Token> next;
-        var func = functionInvocation();
-        if (func.isPresent())
-            return func.get();
         Node left = term();
         while (true) {
             next = reader.matchAndRemove(TokenType.PLUS);
@@ -498,6 +495,10 @@ public class Parser {
      * Matches and returns a Factor: number | variable | ( EXPRESSION )
      */
     private Node factor() throws Exception {
+        var func = functionInvocation();
+        if (func.isPresent())
+            return func.get();
+
         Optional<Token> next;
         int sign = 1;
         next = reader.matchAndRemove(TokenType.MINUS);
