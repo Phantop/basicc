@@ -41,7 +41,7 @@ public class ParserTest {
         p = new Parser(tokens);
         var ast = p.parse();
         var output = ast.toString();
-        var expected = "x=((4+((-6.11/-2)*(-1--2.12)))+5)\n\n";
+        var expected = "x=((4+((-6.11/-2)*(-1--2.12)))+5)\n";
         Assert.assertEquals(expected, output);
     }
 
@@ -78,7 +78,7 @@ public class ParserTest {
         p = new Parser(tokens);
         var ast = p.parse();
         var output = ast.toString();
-        var expected = "x=3.1415\nx=y\n\n"; 
+        var expected = "x=3.1415\nx=y\n"; 
         Assert.assertEquals(expected, output);
     }
 
@@ -101,7 +101,7 @@ public class ParserTest {
         p = new Parser(tokens);
         var ast = p.parse();
         var output = ast.toString();
-        var expected = "z=\"z\"\nPRINT (x+y), z, \"z\",\n\n";
+        var expected = "z=\"z\"\nPRINT (x+y), z, \"z\",\n";
         Assert.assertEquals(expected, output);
     }
 
@@ -202,7 +202,7 @@ public class ParserTest {
         var output = ast.toString();
         var expected =
             "INPUT \"The cow goes moo\", x, y\n"+
-            "INPUT cow, x, y\n\n";
+            "INPUT cow, x, y\n";
         Assert.assertEquals(expected, output);
     }
 
@@ -240,7 +240,7 @@ public class ParserTest {
         var output = ast.toString();
         var expected =
             "DATA \"The cow goes moo\", ((4+((-6.11/-2)*(-1--2.12)))+5),\n"+
-            "READ x, y,\n\n";
+            "READ x, y,\n";
         Assert.assertEquals(expected, output);
     }
 
@@ -292,7 +292,7 @@ public class ParserTest {
         p = new Parser(tokens);
         var ast = p.parse();
         var output = ast.toString();
-        var expected = "FOR x = 2 TO 10 STEP 2\n" + "FOR x = 2 TO 10 STEP 1\n" + "GOSUB lmao\n" + "NEXT x\n\n";
+        var expected = "FOR x = 2 TO 10 STEP 2\n" + "FOR x = 2 TO 10 STEP 1\n" + "GOSUB lmao\n" + "NEXT x\n";
         Assert.assertEquals(expected, output);
     }
 
@@ -312,7 +312,7 @@ public class ParserTest {
         p = new Parser(tokens);
         var ast = p.parse();
         var output = ast.toString();
-        var expected = "WHILE (x+2)=RANDOM() lmao\n\n";
+        var expected = "WHILE (x+2)=RANDOM() lmao\n";
         Assert.assertEquals(expected, output);
     }
 
@@ -348,7 +348,7 @@ public class ParserTest {
         var expected = "back: IF LEFT(\"The cow goes moo\", \"I don't say meow\", )<=RIGHT(4.2069, ) THEN lmao\n" +
             "END\n" +
             "GOSUB back\n" +
-            "RETURN\n\n";
+            "RETURN\n";
         Assert.assertEquals(expected, output);
     }
 
@@ -432,7 +432,7 @@ public class ParserTest {
         p = new Parser(tokens);
         var ast = p.parse();
         var output = ast.toString();
-        var expected = "WHILE (x+2)<RANDOM() lmao\n\n";
+        var expected = "WHILE (x+2)<RANDOM() lmao\n";
         Assert.assertEquals(expected, output);
     }
     @Test
@@ -451,7 +451,7 @@ public class ParserTest {
         p = new Parser(tokens);
         var ast = p.parse();
         var output = ast.toString();
-        var expected = "WHILE (x+2)>RANDOM() lmao\n\n";
+        var expected = "WHILE (x+2)>RANDOM() lmao\n";
         Assert.assertEquals(expected, output);
     }
     @Test
@@ -470,7 +470,7 @@ public class ParserTest {
         p = new Parser(tokens);
         var ast = p.parse();
         var output = ast.toString();
-        var expected = "WHILE (x+2)<=RANDOM() lmao\n\n";
+        var expected = "WHILE (x+2)<=RANDOM() lmao\n";
         Assert.assertEquals(expected, output);
     }
     @Test
@@ -489,7 +489,7 @@ public class ParserTest {
         p = new Parser(tokens);
         var ast = p.parse();
         var output = ast.toString();
-        var expected = "WHILE (x+2)>=RANDOM() lmao\n\n";
+        var expected = "WHILE (x+2)>=RANDOM() lmao\n";
         Assert.assertEquals(expected, output);
     }
     @Test(expected = Exception.class)
@@ -520,7 +520,7 @@ public class ParserTest {
         p = new Parser(tokens);
         var ast = p.parse();
         var output = ast.toString();
-        var expected = "x=(2*RANDOM())\n\n";
+        var expected = "x=(2*RANDOM())\n";
         Assert.assertEquals(expected, output);
     }
 }

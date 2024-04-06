@@ -17,14 +17,8 @@ public class Parser {
         reader = new TokenHandler(stream);
     }
 
-    public ProgramNode parse() throws Exception {
-        var program = new ProgramNode();
-        while (acceptSeparators()); // eat any separators before stuff
-        while (reader.moreTokens()) {
-            statements().ifPresent(x -> program.add(x));
-            while (acceptSeparators()); // eat any separators between/after stuff
-        }
-        return program;
+    public StatementsNode parse() throws Exception {
+        return statements();
     }
 
     private boolean acceptSeparators() {
@@ -39,18 +33,17 @@ public class Parser {
         throw new Exception();
     }
 
-    private Optional<StatementsNode> statements() throws Exception {
+    private StatementsNode statements() throws Exception {
         var out = new StatementsNode();
         Optional<StatementNode> line;
-        do {
+        while (reader.moreTokens()) {
             line = statement();
             if (line.isPresent()) out.add(line.get());
             if (!acceptSeparators()) // statements should be separated
                 handleError("Missing separator after statement at %d:%d\n");
             while (acceptSeparators()); // eat any additional separators
-        } while (line.isPresent() && reader.moreTokens()); // tokens can finish while building statements list
-        if (out.isEmpty()) return Optional.empty();
-        return Optional.of(out);
+        }
+        return out;
     }
 
     /**
