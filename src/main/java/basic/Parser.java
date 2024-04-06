@@ -29,7 +29,7 @@ public class Parser {
         var next = reader.peek(0);
         var bad = next.get();
         System.err.format(msg, bad.getLine(), bad.getPos());
-        System.out.println("TokenHandler starts with: " + next.get());
+        System.err.println("TokenHandler starts with: " + next.get());
         throw new Exception();
     }
 

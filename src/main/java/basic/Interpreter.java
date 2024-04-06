@@ -44,17 +44,31 @@ public class Interpreter {
         }
     }
 
+    public Node popData() {
+        return data.pop();
+    }
+
     /**
      * Preprocesses data statements
      * @modifies labels, mapping all label strings to the relevant node
+     * @throws exception if a label is repeated
      */
-    public void processLabels() {
+    public void processLabels() throws Exception {
         for (StatementNode s : ast.getAST()) {
             LabeledStatementNode label = null;
             if (s instanceof LabeledStatementNode) label = (LabeledStatementNode) s;
-            if (label != null)
+            if (label != null) {
+                if (labels.containsKey(label.getLabel())) {
+                    System.err.println("Repeated label: " + label.getLabel());
+                    throw new Exception();
+                }
                 this.labels.put(label.getLabel(), label);
+            }
         }
+    }
+
+    public LabeledStatementNode getLabel(String s) {
+        return labels.get(s);
     }
 
     /* START OF BUILT-IN FUNCTIONS */

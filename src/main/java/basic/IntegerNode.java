@@ -7,7 +7,7 @@ public class IntegerNode extends Node {
         value = in;
     }
 
-    public float getValue() {
+    public int getValue() {
         return value;
     }
 
