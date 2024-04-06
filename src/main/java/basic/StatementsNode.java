@@ -21,7 +21,7 @@ public class StatementsNode extends Node {
      * Unlikely to be used for now but presumably something of this sort necessary
      * for a later step (or some kind of more specific accessor)
      */
-    public List<Node> getAST() {
+    public List<StatementNode> getAST() {
         return Collections.unmodifiableList(program);
     }
 

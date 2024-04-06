@@ -109,6 +109,11 @@ public class Parser {
                 op = Invocation.NUM;
         }
         if (op == null) {
+            next = reader.matchAndRemove(TokenType.NUMF);
+            if (next.isPresent())
+                op = Invocation.NUMF;
+        }
+        if (op == null) {
             next = reader.matchAndRemove(TokenType.RANDOM);
             if (next.isPresent())
                 op = Invocation.RANDOM;

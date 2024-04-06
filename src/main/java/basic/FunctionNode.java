@@ -8,6 +8,7 @@ public class FunctionNode extends Node {
         LEFT,
         MID,
         NUM,
+        NUMF,
         RANDOM,
         RIGHT,
         VAL,

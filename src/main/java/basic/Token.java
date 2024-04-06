@@ -51,6 +51,7 @@ public class Token {
         LEFT,
         MID,
         NUM,
+        NUMF,
         RANDOM,
         RIGHT,
         VAL,

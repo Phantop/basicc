@@ -224,6 +224,7 @@ public class Lexer {
         knownWords.put("random", TokenType.RANDOM);
         knownWords.put("mid$", TokenType.MID);
         knownWords.put("num$", TokenType.NUM);
+        knownWords.put("num%", TokenType.NUMF);
         knownWords.put("val", TokenType.VAL);
         knownWords.put("val%", TokenType.VALF);
 
