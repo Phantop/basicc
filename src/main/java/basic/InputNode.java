@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.Collections;
 public class InputNode extends StatementNode {
     
+    private final Node input;
     private LinkedList<Node> params;
-    private Node input;
 
     public InputNode(Node input) {
         params = new LinkedList<Node>();
