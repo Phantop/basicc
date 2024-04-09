@@ -12,7 +12,7 @@ import java.util.Random;
  */
 public class Interpreter {
     private final StatementsNode ast;
-    private LinkedList<Node> data;
+    private DataVisitor data;
     private LabelVisitor labels;
 
     private HashMap<String,Integer> intVars;
@@ -22,7 +22,7 @@ public class Interpreter {
 
     public Interpreter (StatementsNode ast)  {
         this.ast = ast;
-        this.data = new LinkedList<Node>();
+        this.data = new DataVisitor();
         this.labels = new LabelVisitor();
     }
 
@@ -30,18 +30,9 @@ public class Interpreter {
      * Preprocesses data statements
      * @modifies data, adding in all data statement contents in order
      */
-    public void processData() {
-        for (StatementNode s : ast.getAST()) {
-            DataNode data = null;
-            if (s instanceof DataNode) data = (DataNode) s;
-            if (s instanceof LabeledStatementNode) {
-                var tmp = (LabeledStatementNode) s;
-                if (tmp.getStatement() instanceof DataNode)
-                    data = (DataNode) tmp.getStatement();
-            }
-            if (data != null)
-                this.data.addAll(data.getData());
-        }
+    public void processData() throws Exception {
+        for (StatementNode s : ast.getAST())
+            s.accept(data);
     }
 
     public Node popData() {
