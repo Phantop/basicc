@@ -13,7 +13,7 @@ import java.util.Random;
 public class Interpreter {
     private final StatementsNode ast;
     private LinkedList<Node> data;
-    private HashMap<String,LabeledStatementNode> labels;
+    private LabelVisitor labels;
 
     private HashMap<String,Integer> intVars;
     private HashMap<String,Float> floatVars;
@@ -23,7 +23,7 @@ public class Interpreter {
     public Interpreter (StatementsNode ast)  {
         this.ast = ast;
         this.data = new LinkedList<Node>();
-        this.labels = new HashMap<>();
+        this.labels = new LabelVisitor();
     }
 
     /**
@@ -54,17 +54,8 @@ public class Interpreter {
      * @throws exception if a label is repeated
      */
     public void processLabels() throws Exception {
-        for (StatementNode s : ast.getAST()) {
-            LabeledStatementNode label = null;
-            if (s instanceof LabeledStatementNode) label = (LabeledStatementNode) s;
-            if (label != null) {
-                if (labels.containsKey(label.getLabel())) {
-                    System.err.println("Repeated label: " + label.getLabel());
-                    throw new Exception();
-                }
-                this.labels.put(label.getLabel(), label);
-            }
-        }
+        for (StatementNode s : ast.getAST())
+            s.accept(labels);
     }
 
     public LabeledStatementNode getLabel(String s) {
