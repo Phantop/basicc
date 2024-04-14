@@ -6,14 +6,14 @@ import java.util.Collections;
 public class InputNode extends StatementNode {
     
     private final Node input;
-    private LinkedList<Node> params;
+    private LinkedList<VariableNode> params;
 
     public InputNode(Node input) {
-        params = new LinkedList<Node>();
+        params = new LinkedList<>();
         this.input = input;
     }
 
-    public void add(Node next) {
+    public void add(VariableNode next) {
         params.add(next);
     }
 
@@ -21,12 +21,16 @@ public class InputNode extends StatementNode {
         return input;
     }
 
-    public List<Node> getParams() {
+    public List<VariableNode> getParams() {
         return Collections.unmodifiableList(params);
     }
 
     public boolean isEmpty() {
         return params.isEmpty();
+    }
+
+    public int size() {
+        return params.size();
     }
 
     public String toString() {

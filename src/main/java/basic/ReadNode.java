@@ -5,17 +5,17 @@ import java.util.List;
 import java.util.Collections;
 public class ReadNode extends StatementNode {
     
-    private LinkedList<Node> reads;
+    private LinkedList<VariableNode> reads;
 
     public ReadNode() {
-        reads = new LinkedList<Node>();
+        reads = new LinkedList<>();
     }
 
-    public void add(Node next) {
+    public void add(VariableNode next) {
         reads.add(next);
     }
 
-    public List<Node> getReads() {
+    public List<VariableNode> getReads() {
         return Collections.unmodifiableList(reads);
     }
 

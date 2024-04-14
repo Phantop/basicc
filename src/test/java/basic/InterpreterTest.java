@@ -140,7 +140,7 @@ public class InterpreterTest {
     }
 
     @Test
-    public void testEvaluateInt() {
+    public void testEvaluateInt() throws Exception {
         i = new Interpreter(new StatementsNode());
         var n = new IntegerNode(1);
         var out = i.evaluate(n);
@@ -148,7 +148,7 @@ public class InterpreterTest {
     }
 
     @Test
-    public void testEvaluateIntOp() {
+    public void testEvaluateIntOp() throws Exception {
         i = new Interpreter(new StatementsNode());
         var n = new IntegerNode(1);
         var o = new MathOpNode(n, MathOpNode.Operation.ADD, n);
@@ -157,7 +157,7 @@ public class InterpreterTest {
     }
 
         @Test
-    public void testEvaluateIntFail() {
+    public void testEvaluateIntFail() throws Exception {
         i = new Interpreter(new StatementsNode());
         var n = new ReturnNode();
         var out = i.evaluate(n);
