@@ -5,6 +5,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.LinkedList;
 import basic.Token.TokenType;
+import basic.MathOpNode.Operation;
 
 public class InterpreterTest {
 
@@ -138,4 +139,28 @@ public class InterpreterTest {
         Assert.assertThrows(Exception.class, () -> i.processLabels());
     }
 
+    @Test
+    public void testEvaluateInt() {
+        i = new Interpreter(new StatementsNode());
+        var n = new IntegerNode(1);
+        var out = i.evaluate(n);
+        Assert.assertEquals((int) out.get(), 1);
+    }
+
+    @Test
+    public void testEvaluateIntOp() {
+        i = new Interpreter(new StatementsNode());
+        var n = new IntegerNode(1);
+        var o = new MathOpNode(n, MathOpNode.Operation.ADD, n);
+        var out = i.evaluate(o);
+        Assert.assertEquals((int) out.get(), 2);
+    }
+
+        @Test
+    public void testEvaluateIntFail() {
+        i = new Interpreter(new StatementsNode());
+        var n = new ReturnNode();
+        var out = i.evaluate(n);
+        Assert.assertTrue(out.isEmpty());
+    }
 }
