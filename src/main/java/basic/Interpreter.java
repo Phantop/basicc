@@ -30,13 +30,14 @@ public class Interpreter {
         this.data = new DataVisitor();
         this.labels = new LabelVisitor();
         this.test = test;
+
+        this.intVars = new HashMap<>();
+        this.floatVars = new HashMap<>();
+        this.stringVars = new HashMap<>();
     }
 
     protected Interpreter (StatementsNode ast)  {
-        this.ast = ast;
-        this.data = new DataVisitor();
-        this.labels = new LabelVisitor();
-        this.test = false;
+        this(ast, false);
     }
 
     /**
@@ -64,6 +65,14 @@ public class Interpreter {
 
     protected LabeledStatementNode getLabel(String s) {
         return labels.get(s);
+    }
+
+    protected String getVar(String s) {
+        if (floatVars.containsKey(s))
+            return floatVars.get(s).toString();
+        if (intVars.containsKey(s))
+            return intVars.get(s).toString();
+        return stringVars.get(s);
     }
 
     /* START OF BUILT-IN FUNCTIONS */
@@ -254,7 +263,7 @@ public class Interpreter {
             }
 
         }
-        return null;
+        return out;
     }
 
     protected void interpret(PrintNode n) throws Exception {
@@ -294,7 +303,6 @@ public class Interpreter {
         Scanner s = new Scanner(System.in);
         for (int i = 0; i < n.size(); i++)
             in.add(s.nextLine());
-
     }
 
     protected void interpret(ReadNode n) throws Exception {
