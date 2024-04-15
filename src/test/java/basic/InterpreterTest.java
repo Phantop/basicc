@@ -4,6 +4,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import java.io.IOException;
 import java.io.ByteArrayOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.LinkedList;
 import basic.Token.TokenType;
@@ -265,12 +267,14 @@ public class InterpreterTest {
         tokens.add(new Token(TokenType.STRINGLITERAL, 0, 0, "I like to eat "));
         tokens.add(new Token(TokenType.COMMA, 0, 0));
         tokens.add(new Token(TokenType.WORD, 0, 0, "var$"));
+        tokens.add(new Token(TokenType.COMMA, 0, 0));
+        tokens.add(new Token(TokenType.NUMBER, 0, 0, "2"));
         tokens.add(new Token(TokenType.ENDOFLINE, 0, 0));
         p = new Parser(tokens);
         var ast = p.parse();
         var output = ast.toString();
         var expected = "var$=\"pasta\"\n"
-            + "PRINT \"I like to eat \", var$,\n";
+            + "PRINT \"I like to eat \", var$, 2,\n";
         Assert.assertEquals(expected, output);
 
         i = new Interpreter(ast);
@@ -280,11 +284,66 @@ public class InterpreterTest {
 
         System.setOut(new PrintStream(outputStreamCaptor));
         i.interpret(astarr.get(1));
-        Assert.assertEquals("I like to eat pasta\n", outputStreamCaptor.toString());
+        Assert.assertEquals("I like to eat pasta2\n", outputStreamCaptor.toString());
         System.setOut(standardOut);
     }
 
     @Test
     public void testDataInputRead() throws Exception {
+        var tokens = new LinkedList<Token>();
+        tokens.add(new Token(TokenType.DATA, 0, 0));
+        tokens.add(new Token(TokenType.NUMBER, 0, 0, "1"));
+        tokens.add(new Token(TokenType.COMMA, 0, 0));
+        tokens.add(new Token(TokenType.NUMBER, 0, 0, "13.5"));
+        tokens.add(new Token(TokenType.COMMA, 0, 0));
+        tokens.add(new Token(TokenType.STRINGLITERAL, 0, 0, "lol this is a string"));
+        tokens.add(new Token(TokenType.ENDOFLINE, 0, 0));
+        tokens.add(new Token(TokenType.READ, 0, 0));
+        tokens.add(new Token(TokenType.WORD, 0, 0, "a"));
+        tokens.add(new Token(TokenType.COMMA, 0, 0));
+        tokens.add(new Token(TokenType.WORD, 0, 0, "b%"));
+        tokens.add(new Token(TokenType.COMMA, 0, 0));
+        tokens.add(new Token(TokenType.WORD, 0, 0, "c$"));
+        tokens.add(new Token(TokenType.ENDOFLINE, 0, 0));
+        tokens.add(new Token(TokenType.INPUT, 0, 0));
+        tokens.add(new Token(TokenType.WORD, 0, 0, "c$"));
+        tokens.add(new Token(TokenType.COMMA, 0, 0));
+        tokens.add(new Token(TokenType.WORD, 0, 0, "a"));
+        tokens.add(new Token(TokenType.COMMA, 0, 0));
+        tokens.add(new Token(TokenType.WORD, 0, 0, "b%"));
+        tokens.add(new Token(TokenType.COMMA, 0, 0));
+        tokens.add(new Token(TokenType.WORD, 0, 0, "c$"));
+        tokens.add(new Token(TokenType.ENDOFLINE, 0, 0));
+        p = new Parser(tokens);
+        var ast = p.parse();
+        var output = ast.toString();
+        var expected =
+            "DATA 1, 13.5, \"lol this is a string\",\n" +
+            "READ a, b%, c$,\n" +
+            "INPUT c$, a, b%, c$\n";
+        Assert.assertEquals(expected, output);
+
+        i = new Interpreter(ast);
+        i.processData();
+
+        var astarr = ast.getAST();
+        i.interpret(astarr.get(1));
+        Assert.assertEquals("1", i.getVar("a"));
+        Assert.assertEquals("13.5", i.getVar("b%"));
+        Assert.assertEquals("lol this is a string", i.getVar("c$"));
+
+        String input = "4\n1.2\nwords!\n";
+        InputStream sysInBackup = System.in;
+        ByteArrayInputStream in = new ByteArrayInputStream(input.getBytes());
+        System.setIn(in);
+        System.setOut(new PrintStream(outputStreamCaptor));
+        i.interpret(astarr.get(2));
+        Assert.assertEquals("lol this is a string\n", outputStreamCaptor.toString());
+        System.setOut(standardOut);
+        Assert.assertEquals("4", i.getVar("a"));
+        Assert.assertEquals("1.2", i.getVar("b%"));
+        Assert.assertEquals("words!", i.getVar("c$"));
+
+        System.setIn(sysInBackup);
     }
 }

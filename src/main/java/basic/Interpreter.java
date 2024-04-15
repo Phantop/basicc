@@ -283,7 +283,7 @@ public class Interpreter {
 
             if (name.endsWith("%"))
                 floatVars.put(name, Float.parseFloat(input));
-            if (name.endsWith("$"))
+            else if (name.endsWith("$"))
                 stringVars.put(name, input);
             else
                 intVars.put(name, Integer.parseInt(input));
@@ -303,6 +303,8 @@ public class Interpreter {
         Scanner s = new Scanner(System.in);
         for (int i = 0; i < n.size(); i++)
             in.add(s.nextLine());
+
+        interpret(n, in);
     }
 
     protected void interpret(ReadNode n) throws Exception {
