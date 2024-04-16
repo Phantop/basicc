@@ -20,6 +20,7 @@ public class Interpreter {
 
     // to indicate where PRINT and INPUT should output
     private boolean test;
+    private List<String> ioList;
 
     private HashMap<String,Integer> intVars;
     private HashMap<String,Float> floatVars;
@@ -38,6 +39,14 @@ public class Interpreter {
 
     protected Interpreter (StatementsNode ast)  {
         this(ast, false);
+    }
+
+    protected void putIO(List<String> in) {
+        ioList = in;
+    }
+
+    protected List<String> getIO() {
+        return ioList;
     }
 
     /**
@@ -257,7 +266,7 @@ public class Interpreter {
                 if (!intval.isEmpty())
                     out.add(intval.get().toString());
                 else {
-                var floatval = evaluatef(x);
+                    var floatval = evaluatef(x);
                     out.add(floatval.get().toString());
                 }
             }
@@ -267,9 +276,12 @@ public class Interpreter {
     }
 
     protected void interpret(PrintNode n) throws Exception {
-        for (String x : print(n))
-            System.out.print(x);
-        System.out.println();
+        ioList = print(n);
+        if (!test) {
+            for (String x : ioList)
+                System.out.print(x);
+            System.out.println();
+        }
     }
 
     /**
@@ -299,12 +311,14 @@ public class Interpreter {
             str = ((StringNode) input).getValue();
         System.out.println(str);
 
-        var in = new LinkedList<String>();
-        Scanner s = new Scanner(System.in);
-        for (int i = 0; i < n.size(); i++)
-            in.add(s.nextLine());
+        if (!test) {
+            ioList = new LinkedList<String>();
+            Scanner s = new Scanner(System.in);
+            for (int i = 0; i < n.size(); i++)
+                ioList.add(s.nextLine());
+        }
 
-        interpret(n, in);
+        interpret(n, ioList);
     }
 
     protected void interpret(ReadNode n) throws Exception {

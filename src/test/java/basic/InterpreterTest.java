@@ -277,15 +277,17 @@ public class InterpreterTest {
             + "PRINT \"I like to eat \", var$, 2,\n";
         Assert.assertEquals(expected, output);
 
-        i = new Interpreter(ast);
+        i = new Interpreter(ast, true);
         var astarr = ast.getAST();
         i.interpret(astarr.get(0));
         Assert.assertEquals("pasta", i.getVar("var$"));
 
-        System.setOut(new PrintStream(outputStreamCaptor));
         i.interpret(astarr.get(1));
-        Assert.assertEquals("I like to eat pasta2\n", outputStreamCaptor.toString());
-        System.setOut(standardOut);
+        var expectedString = new LinkedList<String>();
+        expectedString.add("I like to eat ");
+        expectedString.add("pasta");
+        expectedString.add("2");
+        Assert.assertEquals(expectedString, i.getIO());
     }
 
     @Test
@@ -323,7 +325,7 @@ public class InterpreterTest {
             "INPUT c$, a, b%, c$\n";
         Assert.assertEquals(expected, output);
 
-        i = new Interpreter(ast);
+        i = new Interpreter(ast, true);
         i.processData();
 
         var astarr = ast.getAST();
@@ -332,18 +334,14 @@ public class InterpreterTest {
         Assert.assertEquals("13.5", i.getVar("b%"));
         Assert.assertEquals("lol this is a string", i.getVar("c$"));
 
-        String input = "4\n1.2\nwords!\n";
-        InputStream sysInBackup = System.in;
-        ByteArrayInputStream in = new ByteArrayInputStream(input.getBytes());
-        System.setIn(in);
-        System.setOut(new PrintStream(outputStreamCaptor));
+        var input = new LinkedList<String>();
+        input.add("4");
+        input.add("1.2");
+        input.add("words!");
+        i.putIO(input);
         i.interpret(astarr.get(2));
-        Assert.assertEquals("lol this is a string\n", outputStreamCaptor.toString());
-        System.setOut(standardOut);
         Assert.assertEquals("4", i.getVar("a"));
         Assert.assertEquals("1.2", i.getVar("b%"));
         Assert.assertEquals("words!", i.getVar("c$"));
-
-        System.setIn(sysInBackup);
     }
 }
