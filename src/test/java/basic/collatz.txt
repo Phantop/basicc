@@ -1,0 +1,25 @@
+INPUT "Please provide a number > 1.", num
+steps = 0
+WHILE num > 1 finish
+mod2 = num - (num / 2 * 2)
+GOSUB evencheck
+GOSUB oddcheck
+steps = steps + 1
+
+finish:
+PRINT steps, " steps."
+END
+
+oddcheck:
+IF mod2=1 THEN odd
+RETURN
+odd:
+num = 3 * num + 1
+RETURN
+
+evencheck:
+IF mod2=0 THEN even
+RETURN
+even:
+num = num / 2
+RETURN

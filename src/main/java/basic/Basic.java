@@ -22,6 +22,10 @@ public class Basic {
             Parser p = new Parser(tokens);
             var ast = p.parse();
             System.out.print(ast.toString());
+
+            System.out.println("Interpreting the program:");
+            Interpreter i = new Interpreter(ast);
+            i.interpret();
         }
         catch (Exception x) { // Just so running like this doesn't vomit ugly exceptions
             System.err.format("Exception: %s%n", x);

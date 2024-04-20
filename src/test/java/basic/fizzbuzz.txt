@@ -1,0 +1,30 @@
+FOR i = 1 to 100
+mod3 = i - (i / 3 * 3)
+mod5 = i - (i / 5 * 5)
+
+GOSUB fizzbuzzcheck
+GOSUB fizzcheck
+GOSUB buzzcheck
+NEXT i
+END
+
+fizzcheck:
+IF mod3 = 0 THEN fizz
+RETURN
+fizz:
+PRINT "Fizz"
+RETURN
+
+buzzcheck:
+IF mod5 = 0 THEN buzz
+RETURN
+buzz:
+PRINT "Buzz"
+RETURN
+
+fizzbuzzcheck:
+IF mod3 + mod5 = 0 THEN fzbz
+RETURN
+fzbz:
+PRINT "Fizz Buzz"
+RETURN

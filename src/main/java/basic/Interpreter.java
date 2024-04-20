@@ -287,12 +287,17 @@ public class Interpreter {
         return false; // this should never happen
     }
 
+    public void interpret() throws Exception {
+        interpret(ast.getAST().get(0));
+    }
+
     protected void interpret(StatementNode n) throws Exception {
         processOrder();
         processData();
         processLabels();
 
         while (n != null) {
+            //System.out.println("Running: " + n);
             if (n instanceof AssignmentNode)
                 interpret((AssignmentNode) n);
             if (n instanceof ReadNode)
@@ -314,7 +319,7 @@ public class Interpreter {
                 continue;
             }
             if (n instanceof WhileNode) {
-                n = interpret((ForNode) n);
+                n = interpret((WhileNode) n);
                 continue;
             }
             if (n instanceof GosubNode) {
@@ -350,7 +355,7 @@ public class Interpreter {
     }
 
     protected StatementNode interpret(LabeledStatementNode n) throws Exception {
-        if (stack.get(0) instanceof WhileNode) {
+        if (!stack.isEmpty() && stack.get(0) instanceof WhileNode) {
             WhileNode back = (WhileNode)(stack.get(0));
             if (back.getValue().equals(n.getLabel()) && evaluateb(back.getCondition()))
                 return back;
@@ -365,7 +370,7 @@ public class Interpreter {
     }
 
     protected StatementNode interpret(GosubNode n) throws Exception {
-        stack.add(0, n);
+        stack.add(0, n.next());
         return labels.get(n.getValue());
     }
 
@@ -399,7 +404,7 @@ public class Interpreter {
         if (track > back.getEnd()) {
             return n.next();
         }
-        return back;
+        return back.next();
     }
 
     /** Generates print list for a PrintNode
@@ -409,18 +414,23 @@ public class Interpreter {
     protected List<String> print(PrintNode n) throws Exception {
         var out = new LinkedList<String>();
         for (Node x : n.getPrints()) {
-            if (x instanceof StringNode)
+            if (x instanceof StringNode) {
                 out.add(((StringNode)x).getValue());
-            else if (x instanceof VariableNode)
-                out.add(stringVars.get(((VariableNode)x).getValue()));
-            else {
-                var intval = evaluate(x);
-                if (!intval.isEmpty())
-                    out.add(intval.get().toString());
-                else {
-                    var floatval = evaluatef(x);
-                    out.add(floatval.get().toString());
+                continue;
+            }
+            if (x instanceof VariableNode) {
+                var name = ((VariableNode)x).getValue();
+                if (name.endsWith("$")) {
+                    out.add(stringVars.get(name));
+                    continue;
                 }
+            }
+            var intval = evaluate(x);
+            if (!intval.isEmpty())
+                out.add(intval.get().toString());
+            else {
+                var floatval = evaluatef(x);
+                out.add(floatval.get().toString());
             }
 
         }
