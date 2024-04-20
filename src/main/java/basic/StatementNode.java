@@ -7,4 +7,11 @@ package basic;
  */
 public abstract class StatementNode extends Node {
     public abstract String toString();
+    private StatementNode nextStatement;
+    public StatementNode next() {
+        return nextStatement;
+    }
+    public void setNext(StatementNode next) {
+        nextStatement = next;
+    }
 }

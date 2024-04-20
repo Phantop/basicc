@@ -197,8 +197,7 @@ public class InterpreterTest {
         i = new Interpreter(ast);
         var astarr = ast.getAST();
         i.interpret(astarr.get(0));
-        i.interpret(astarr.get(1));
-        Assert.assertEquals(i.getVar("var2"), "0");
+        Assert.assertEquals("0", i.getVar("var2"));
     }
 
     @Test
@@ -282,7 +281,6 @@ public class InterpreterTest {
         i.interpret(astarr.get(0));
         Assert.assertEquals("pasta", i.getVar("var$"));
 
-        i.interpret(astarr.get(1));
         var expectedString = new LinkedList<String>();
         expectedString.add("I like to eat ");
         expectedString.add("pasta");
@@ -329,7 +327,7 @@ public class InterpreterTest {
         i.processData();
 
         var astarr = ast.getAST();
-        i.interpret(astarr.get(1));
+        i.interpret((ReadNode)astarr.get(1));
         Assert.assertEquals("1", i.getVar("a"));
         Assert.assertEquals("13.5", i.getVar("b%"));
         Assert.assertEquals("lol this is a string", i.getVar("c$"));
@@ -339,9 +337,33 @@ public class InterpreterTest {
         input.add("1.2");
         input.add("words!");
         i.putIO(input);
-        i.interpret(astarr.get(2));
+        i.interpret((InputNode)astarr.get(2));
         Assert.assertEquals("4", i.getVar("a"));
         Assert.assertEquals("1.2", i.getVar("b%"));
         Assert.assertEquals("words!", i.getVar("c$"));
+    }
+
+    @Test
+    public void testASTNextAssign() throws Exception {
+        var tokens = new LinkedList<Token>();
+        tokens.add(new Token(TokenType.WORD, 0, 0, "var%"));
+        tokens.add(new Token(TokenType.EQUALS, 0, 0));
+        tokens.add(new Token(TokenType.NUMBER, 0, 0, "2"));
+        tokens.add(new Token(TokenType.ENDOFLINE, 0, 0));
+        tokens.add(new Token(TokenType.WORD, 0, 0, "var2%"));
+        tokens.add(new Token(TokenType.EQUALS, 0, 0));
+        tokens.add(new Token(TokenType.WORD, 0, 0, "var%"));
+        tokens.add(new Token(TokenType.ENDOFLINE, 0, 0));
+        p = new Parser(tokens);
+        var ast = p.parse();
+        var output = ast.toString();
+        var expected = "var%=2\n"
+            + "var2%=var%\n";
+        Assert.assertEquals(expected, output);
+
+        i = new Interpreter(ast);
+        i.processOrder();
+        var astarr = ast.getAST();
+        Assert.assertEquals(astarr.get(1), astarr.get(0).next());
     }
 }

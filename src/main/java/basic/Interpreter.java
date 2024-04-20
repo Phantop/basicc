@@ -5,6 +5,7 @@ import basic.FunctionNode.Invocation;
 import basic.MathOpNode.Operation;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Queue;
 import java.util.List;
 import java.util.Random;
 import java.util.Optional;
@@ -22,15 +23,19 @@ public class Interpreter {
     private boolean test;
     private List<String> ioList;
 
+    // would be a queue but we put things into the head for certain control simplifications
+    private List<StatementNode> stack;
+
     private HashMap<String,Integer> intVars;
     private HashMap<String,Float> floatVars;
     private HashMap<String,String> stringVars;
 
     protected Interpreter (StatementsNode ast, boolean test)  {
+        this.test = test;
         this.ast = ast;
         this.data = new DataVisitor();
         this.labels = new LabelVisitor();
-        this.test = test;
+        this.stack = new LinkedList<>();
 
         this.intVars = new HashMap<>();
         this.floatVars = new HashMap<>();
@@ -60,6 +65,12 @@ public class Interpreter {
 
     protected Node popData() {
         return data.pop();
+    }
+
+    protected void processOrder() throws Exception {
+        var visitor = new OrderVisitor();
+        for (int i = ast.getAST().size() - 1; i >= 0; i--)
+            ast.getAST().get(i).accept(visitor);
     }
 
     /**
@@ -239,15 +250,156 @@ public class Interpreter {
         return Optional.of(out);
     }
 
+    protected boolean evaluateb(BooleanNode n) throws Exception {
+        var left = n.getLeft();
+        double leftnum;
+        var leftval = evaluate(left);
+        if (!leftval.isEmpty())
+            leftnum = leftval.get();
+        else {
+            leftnum = evaluatef(left).get();
+        }
+
+        var right = n.getRight();
+        double rightnum;
+        var rightval = evaluate(right);
+        if (!rightval.isEmpty())
+            rightnum = rightval.get();
+        else {
+            rightnum = evaluatef(right).get();
+        }
+
+        switch (n.getOp()) {
+            case Comparison.EQUALS:
+                return leftnum == rightnum;
+            case Comparison.NOTEQUALS:
+                return leftnum != rightnum;
+            case Comparison.LESS:
+                return leftnum < rightnum;
+            case Comparison.GREATER:
+                return leftnum > rightnum;
+            case Comparison.LEQ:
+                return leftnum <= rightnum;
+            case Comparison.GEQ:
+                return leftnum >= rightnum;
+        }
+        handleError("Bad boolean " + n);
+        return false; // this should never happen
+    }
+
     protected void interpret(StatementNode n) throws Exception {
-        if (n instanceof AssignmentNode)
-            interpret((AssignmentNode) n);
-        if (n instanceof ReadNode)
-            interpret((ReadNode) n);
-        if (n instanceof InputNode)
-            interpret((InputNode) n);
-        if (n instanceof PrintNode)
-            interpret((PrintNode) n);
+        processOrder();
+        processData();
+        processLabels();
+
+        while (n != null) {
+            if (n instanceof AssignmentNode)
+                interpret((AssignmentNode) n);
+            if (n instanceof ReadNode)
+                interpret((ReadNode) n);
+            if (n instanceof InputNode)
+                interpret((InputNode) n);
+            if (n instanceof PrintNode)
+                interpret((PrintNode) n);
+            if (n instanceof IfNode) {
+                n = interpret((IfNode) n);
+                continue;
+            }
+            if (n instanceof LabeledStatementNode) {
+                n = interpret((LabeledStatementNode) n);
+                continue;
+            }
+            if (n instanceof ForNode) {
+                n = interpret((ForNode) n);
+                continue;
+            }
+            if (n instanceof WhileNode) {
+                n = interpret((ForNode) n);
+                continue;
+            }
+            if (n instanceof GosubNode) {
+                n = interpret((GosubNode) n);
+                continue;
+            }
+            if (n instanceof NextNode) {
+                n = interpret((NextNode) n);
+                continue;
+            }
+            // next node has to also increment its vars, so we handle it like this
+            if (n instanceof ReturnNode) {
+                n = stack.remove(0);
+                continue;
+            }
+            if (n instanceof EndNode)
+                break;
+            n = n.next();
+        }
+    }
+
+    protected StatementNode interpret(WhileNode n) throws Exception {
+        if (!evaluateb(n.getCondition())) {
+            for (StatementNode travel = n.next(); travel != null ; travel = travel.next()) {
+                if (travel instanceof LabeledStatementNode &&
+                        ((LabeledStatementNode)travel).getLabel().equals(n.getValue()))
+                    return travel;
+            }
+            handleError("No ending label for " + n);
+        }
+        stack.add(0, n);
+        return n.next();
+    }
+
+    protected StatementNode interpret(LabeledStatementNode n) throws Exception {
+        if (stack.get(0) instanceof WhileNode) {
+            WhileNode back = (WhileNode)(stack.get(0));
+            if (back.getValue().equals(n.getLabel()) && evaluateb(back.getCondition()))
+                return back;
+        }
+        return n.getStatement();
+    }
+
+    protected StatementNode interpret(IfNode n) throws Exception {
+        if (evaluateb(n.getCondition()))
+            return labels.get(n.getTarget());
+        return n.next();
+    }
+
+    protected StatementNode interpret(GosubNode n) throws Exception {
+        stack.add(0, n);
+        return labels.get(n.getValue());
+    }
+
+    protected StatementNode interpret(ForNode n) throws Exception {
+        var varName = n.getVar().getValue();
+        intVars.put(varName, n.getStart());
+        if (n.getStart() > n.getEnd()) {
+            StatementNode travel;
+            for (travel = n.next(); !(travel instanceof NextNode); travel = travel.next())
+                if (travel instanceof LabeledStatementNode)
+                    travel = ((LabeledStatementNode)travel).getStatement();
+            if (!(travel instanceof NextNode))
+                handleError("No NEXT for statement " + n);
+            return travel;
+        }
+
+        stack.add(0, n);
+        return n.next();
+    }
+
+    protected StatementNode interpret(NextNode n) throws Exception {
+        // we can assume that the relevant for node is at the top of the stack
+        // effectively, we assume nested loops can't cut each other off
+        ForNode back = (ForNode)(stack.get(0));
+        var varName = n.getVar().getValue();
+        if (!varName.equals(back.getVar().getValue()))
+            handleError("Mismatched variable for " + back + " and " + n);
+        int track = intVars.get(varName);
+        track += back.getInc();
+        intVars.put(varName, track);
+        if (track > back.getEnd()) {
+            return n.next();
+        }
+        return back;
     }
 
     /** Generates print list for a PrintNode

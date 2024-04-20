@@ -17,12 +17,11 @@ public class StatementsNode extends Node {
     }
 
     /**
-     * Gives immutable copy of the AST/internal node contents
-     * Unlikely to be used for now but presumably something of this sort necessary
-     * for a later step (or some kind of more specific accessor)
+     * Gives mutable copy of the AST/internal node contents
+     * Needs to be mutable so Interpreter can process next nodes
      */
     public List<StatementNode> getAST() {
-        return Collections.unmodifiableList(program);
+        return program;
     }
 
     public boolean isEmpty() {

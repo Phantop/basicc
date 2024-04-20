@@ -7,7 +7,7 @@ public class NextNode extends StatementNode {
         this.variable = variable;
     }
 
-    public VariableNode getVariable() {
+    public VariableNode getVar() {
         return variable;
     }
 
