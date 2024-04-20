@@ -366,4 +366,39 @@ public class InterpreterTest {
         var astarr = ast.getAST();
         Assert.assertEquals(astarr.get(1), astarr.get(0).next());
     }
+
+    @Test
+    public void testFizzBuzz() throws Exception {
+        var l = new Lexer("fizzbuzz.txt");
+        var tokens = l.lex();
+        var p = new Parser(tokens);
+        var ast = p.parse();
+        var i = new Interpreter(ast, true);
+        var arr = new LinkedList<String>();
+        for (int j = 1; j <= 100; j++) {
+            if (j % 3 == 0 && j % 5 == 0)
+                arr.add("Fizz Buzz");
+            if (j % 3 == 0)
+                arr.add("Fizz");
+            if (j % 5 == 0)
+                arr.add("Buzz");
+        }
+        i.interpret();
+        Assert.assertEquals(arr, i.getFullIO());
+    }
+
+    @Test
+    public void testCollatz() throws Exception {
+        var l = new Lexer("collatz.txt");
+        var tokens = l.lex();
+        var p = new Parser(tokens);
+        var ast = p.parse();
+        var i = new Interpreter(ast, true);
+        var arr = new LinkedList<String>();
+        arr.add("3");
+        i.putIO(arr);
+        i.interpret();
+        Assert.assertEquals("7", i.getIO().get(0));
+        Assert.assertEquals(" steps.", i.getIO().get(1));
+    }
 }

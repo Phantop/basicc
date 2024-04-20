@@ -22,6 +22,7 @@ public class Interpreter {
     // to indicate where PRINT and INPUT should output
     private boolean test;
     private List<String> ioList;
+    private List<String> fullOutList;
 
     // would be a queue but we put things into the head for certain control simplifications
     private List<StatementNode> stack;
@@ -36,6 +37,7 @@ public class Interpreter {
         this.data = new DataVisitor();
         this.labels = new LabelVisitor();
         this.stack = new LinkedList<>();
+        this.fullOutList = new LinkedList<>();
 
         this.intVars = new HashMap<>();
         this.floatVars = new HashMap<>();
@@ -52,6 +54,10 @@ public class Interpreter {
 
     protected List<String> getIO() {
         return ioList;
+    }
+
+    protected List<String> getFullIO() {
+        return fullOutList;
     }
 
     /**
@@ -384,7 +390,7 @@ public class Interpreter {
                     travel = ((LabeledStatementNode)travel).getStatement();
             if (!(travel instanceof NextNode))
                 handleError("No NEXT for statement " + n);
-            return travel;
+            return travel.next();
         }
 
         stack.add(0, n);
@@ -439,6 +445,7 @@ public class Interpreter {
 
     protected void interpret(PrintNode n) throws Exception {
         ioList = print(n);
+        fullOutList.addAll(ioList);
         if (!test) {
             for (String x : ioList)
                 System.out.print(x);
